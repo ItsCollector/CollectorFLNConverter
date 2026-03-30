@@ -20,6 +20,7 @@ A tool for Osu!mania to convert charts to full long note
 ## Notes
 - Only supports osu! (stable), not osu!lazer
 - Requires osu! to be running
+- Works for Windows only
 
 ## Stars 
 - If my program helped you, leave a star on Github!
