@@ -6,7 +6,8 @@ A tool for Osu!mania to convert charts to full long note
 - Easy to use GUI 
 - Converts maps to FLN format
 - Configurable gap, OD, HP with the option to override the map's values
-
+- Settings save for next time you open the program
+  
 ## Setup
 1. Launch the app, with Osu! open.
 2. If your Osu! install is not in the default local user location, click the "Link Osu! Folder" button then and select the Osu! folder root directory
