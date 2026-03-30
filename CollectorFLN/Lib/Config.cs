@@ -1,0 +1,81 @@
+﻿using System.Text.Json;
+
+namespace CollectorFLN
+{
+    public class Config
+    {
+        // Configuration settings
+        public string SongPath { get; set; } = "";
+        public string ExePath { get; set; } = "";
+        public float OD { get; set; } = 0;
+        public float HP { get; set; } = 6;
+        public int Gap { get; set; } = 80;
+        public bool OverrideOD { get; set; } = true;
+        public bool OverrideHP { get; set; } = true;
+
+        private static readonly string configFile = "config.json";
+
+        public static Config Load()
+        {
+            try
+            {
+                if (!File.Exists(configFile))
+                {
+                    var defaultConfig = new Config();
+
+                    // Try auto-detect ONLY when file doesn't exist
+                    defaultConfig.FetchDefaultDirectory();
+
+                    File.WriteAllText(configFile, JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true }));
+                    return defaultConfig;
+                }
+
+                string json = File.ReadAllText(configFile);
+                var config = JsonSerializer.Deserialize<Config>(json) ?? new Config();
+
+                // If paths are still empty, try detect once
+                if (string.IsNullOrEmpty(config.SongPath) || string.IsNullOrEmpty(config.ExePath))
+                {
+                    config.FetchDefaultDirectory();
+                }
+
+                return config;
+            }
+            catch
+            {
+                return new Config();
+            }
+        }
+
+        public void Save()
+        {
+            try
+            {
+                string json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(configFile, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to save config: {ex.Message}");
+            }
+        }
+
+        // Fetches the osu! Songs directory path and executable path from the user's local application data
+        void FetchDefaultDirectory()
+        {
+            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string osuPath = Path.Combine(localAppDataPath, "osu!");
+
+            if (Directory.Exists(osuPath))
+            {
+                SongPath = Path.Combine(osuPath, "Songs");
+                ExePath = Path.Combine(osuPath, "osu!.exe");
+                Save();
+            }
+            else
+            {
+                Console.WriteLine("Could not find osu! directory. Please ensure osu! is installed and run the program again.");
+            }
+        }
+    }
+}
