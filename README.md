@@ -5,6 +5,7 @@ A tool for Osu!mania to convert charts to full long note
 - Auto-detects current map via memory reading
 - Easy to use GUI 
 - Converts maps to FLN format
+- Automatically imports into Osu!
 - Configurable gap, OD, HP with the option to override the map's values
 - Settings save for next time you open the program
   
