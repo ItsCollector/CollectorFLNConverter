@@ -12,6 +12,7 @@ A tool for Osu!mania to convert charts to full long note
 - Settings save for next time you open the program
   
 ## Setup
+- Download the latest release here: https://github.com/ItsCollector/CollectorFLNConverter/releases/tag/v1.0.0
 - Unzip the x86 folder
 - Launch CollectorFLN.exe, with Osu! open. (recommend creating a shortcut for this application and putting it on your desktop)
 - If your Osu! install is not in the default local user location, click the "Link Osu! Folder" button then and select the Osu! folder root directory
