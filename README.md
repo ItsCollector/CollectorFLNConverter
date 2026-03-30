@@ -24,6 +24,11 @@ A tool for Osu!mania to convert charts to full long note
 - Requires osu! to be running
 - Works for Windows only
 
+## To-do List
+- Native linux support
+- Option to use snap-based LN gaps 
+- There was some bug that my friend got that went away instantly and I think I know what caused it.
+
 ## Stars 
 - If my program helped you, leave a star on Github!
 
