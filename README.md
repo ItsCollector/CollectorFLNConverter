@@ -18,5 +18,8 @@ A tool for Osu!mania to convert charts to full long note
 - Only supports osu! (stable), not osu!lazer
 - Requires osu! to be running
 
+## Stars 
+- If my program helped you, leave a star on Github!
+
 ## Special Thanks
 https://github.com/Piotrekol/ProcessMemoryDataFinder - For providing memory processing tools for Osu!
