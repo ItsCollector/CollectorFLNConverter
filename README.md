@@ -1,6 +1,8 @@
 # Collector FLN Converter
 A tool for Osu!mania to convert charts to full long note
 
+<img width="471" height="612" alt="image" src="https://github.com/user-attachments/assets/90a24ded-8cfe-44f0-b3e2-7505d3523c74" />
+
 ## Features
 - Auto-detects current map via memory reading
 - Easy to use GUI 
