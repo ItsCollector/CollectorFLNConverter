@@ -12,10 +12,11 @@ A tool for Osu!mania to convert charts to full long note
 - Settings save for next time you open the program
   
 ## Setup
-1. Launch the app, with Osu! open.
-2. If your Osu! install is not in the default local user location, click the "Link Osu! Folder" button then and select the Osu! folder root directory
-3. If you don't see a "Link Osu! Folder" button then the program has already linked it automatically
-4. Enjoy converting maps
+- Unzip the x86 folder
+- Launch CollectorFLN.exe, with Osu! open. (recommend creating a shortcut for this application and putting it on your desktop)
+- If your Osu! install is not in the default local user location, click the "Link Osu! Folder" button then and select the Osu! folder root directory
+- If you don't see a "Link Osu! Folder" button then the program has already linked it automatically
+- Enjoy converting maps
 
 ## Notes
 - Only supports osu! (stable), not osu!lazer
