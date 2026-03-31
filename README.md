@@ -28,6 +28,7 @@ A tool for Osu!mania to convert charts to full long note
 - Native linux support
 - Option to use snap-based LN gaps 
 - There was some bug that my friend got that went away instantly and I think I know what caused it.
+- Found an interesting edge case with the help of Cassio (FLN God, so ET btw) where if the file name is too long, it can crash Osu! lmao. I should make a tweak to make the file name shorter if the artist name / song name makes it too long. 
 
 ## Stars 
 - If my program helped you, leave a star on Github!
