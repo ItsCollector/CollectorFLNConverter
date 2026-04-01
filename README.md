@@ -9,10 +9,11 @@ A tool for Osu!mania to convert charts to full long note
 - Converts maps to FLN format
 - Automatically imports into Osu!
 - Configurable gap, OD, HP with the option to override the map's values
+- Remove SVs
 - Settings save for next time you open the program
   
 ## Setup
-- Download the latest release here: https://github.com/ItsCollector/CollectorFLNConverter/releases/tag/v1.0.0
+- Download the latest release here: https://github.com/ItsCollector/CollectorFLNConverter/releases/tag/v1.1.0
 - Unzip the x86 folder
 - Launch CollectorFLN.exe, with Osu! open. (recommend creating a shortcut for this application and putting it on your desktop)
 - If your Osu! install is not in the default local user location, click the "Link Osu! Folder" button then and select the Osu! folder root directory
@@ -29,8 +30,6 @@ A tool for Osu!mania to convert charts to full long note
 - Option to use snap-based LN gaps 
 - There was some bug that my friend got that went away instantly and I think I know what caused it
 - Found an interesting edge case with the help of Cassio (FLN God, so ET btw) where if the file name is too long, it can crash Osu! lmao. I should make a tweak to make the file name shorter if the artist name / song name makes it too long
-- Forgot to lock the GUI size so you can make it bigger or smaller. Doesn't actually affect functionality but it's something that will take 2 seconds to fix
-- Option to remove SVs
   
 ## Stars 
 - If my program helped you, leave a star on Github!
