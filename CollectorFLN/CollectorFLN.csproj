@@ -10,14 +10,15 @@
 
 		<RootNamespace>CollectorFLN</RootNamespace>
 		<AssemblyName>CollectorFLN</AssemblyName>
+		<ApplicationIcon>Assets\icon.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OsuMemoryDataProvider" Version="0.12.0" />
+	  <Content Include="Assets\icon.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Assets\" />
+		<PackageReference Include="OsuMemoryDataProvider" Version="0.12.0" />
 	</ItemGroup>
 
 	<ItemGroup>
