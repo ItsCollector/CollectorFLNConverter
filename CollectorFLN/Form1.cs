@@ -43,7 +43,6 @@ namespace CollectorFLN
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Icon = new Icon("Assets/icon.ico");
 
             config = Config.Load();
             songsPath = config.SongPath;
@@ -52,6 +51,7 @@ namespace CollectorFLN
             SetupControls();
 
             this.Text = "Collector's FLN Converter";
+            this.Icon = new Icon("Assets/icon.ico");
 
             osuMemoryReader = new OsuMemoryReader();
 
