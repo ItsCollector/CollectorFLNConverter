@@ -9,10 +9,11 @@ A tool for Osu!mania to convert charts to full long note
 - Converts maps to FLN format
 - Automatically imports into Osu!
 - Configurable gap, OD, HP with the option to override the map's values
+- Remove SVs
 - Settings save for next time you open the program
   
 ## Setup
-- Download the latest release here: https://github.com/ItsCollector/CollectorFLNConverter/releases/tag/v1.0.0
+- Download the latest release here: https://github.com/ItsCollector/CollectorFLNConverter/releases/tag/v1.1.0
 - Unzip the x86 folder
 - Launch CollectorFLN.exe, with Osu! open. (recommend creating a shortcut for this application and putting it on your desktop)
 - If your Osu! install is not in the default local user location, click the "Link Osu! Folder" button then and select the Osu! folder root directory
