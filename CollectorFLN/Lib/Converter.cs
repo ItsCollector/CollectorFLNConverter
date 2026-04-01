@@ -5,10 +5,12 @@ namespace CollectorFLN
     public class Converter
     {
         // Extracts hit objects and key count from the .osu file of the beatmap
-        public (List<HitObject>, int keyCount) ExtractHitObjects(string songsPath, string folderName, string fileName)
+        public (List<TimingPoint>, List<HitObject>, int keyCount) ExtractData(string songsPath, string folderName, string fileName)
         {
-            int mapGamemode = GetMapGamemode(songsPath, folderName, fileName);
             List<HitObject> hitObjects = new List<HitObject>();
+            List<TimingPoint> timingPoints = new List<TimingPoint>();
+
+            bool inTimingPoints = false;
             bool inHitObjects = false;
             int keyCount = 4;
 
@@ -23,31 +25,51 @@ namespace CollectorFLN
                     keyCount = Int32.Parse(line.Split(':')[1].Trim());
                 }
 
+                if (line.StartsWith("[TimingPoints]"))
+                {
+                    inTimingPoints = true;
+                    continue;
+                }
+
                 if (line.StartsWith("[HitObjects]"))
                 {
                     inHitObjects = true;
                     continue;
                 }
 
-                if (inHitObjects)
+                if (inTimingPoints)
                 {
                     if (string.IsNullOrWhiteSpace(line) || line.StartsWith("["))
                     {
-                        continue;
+                        inTimingPoints = false; 
                     }
                     else
                     {
-                        HitObject hitObject = CreateHitObject(line, keyCount);
-                        hitObjects.Add(hitObject);
+                        TimingPoint timingPoint = ParseTimingPoint(line);
+                        timingPoints.Add(timingPoint);
+                        continue;
+                    }
+                }
+
+                if (inHitObjects)
+                {
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("["))
+                    {  
+                        inHitObjects = false;
+                    }
+                    else
+                    {
+                        hitObjects.Add(ParseHitObject(line, keyCount));
+                        continue;
                     }
                 }
             }
 
-            return (hitObjects, keyCount);
+            return (timingPoints, hitObjects, keyCount);
         }
 
         // Extracts the game mode of the beatmap from the .osu file, returns -1 if not found or error occurs
-        public int GetMapGamemode(string songsPath, string folderName, string fileName)
+        public static int GetMapGamemode(string songsPath, string folderName, string fileName)
         {
             string fullPath = Path.Combine(songsPath, folderName, fileName);
 
@@ -71,41 +93,8 @@ namespace CollectorFLN
             return -1;
         }
 
-        // Converts a line from the .osu file into a HitObject, using the key count to determine the column
-        HitObject CreateHitObject(string line, int keyCount)
-        {
-            var parts = line.Split(',');
-
-            int x = int.Parse(parts[0]);
-            int time = int.Parse(parts[2]);
-            int type = int.Parse(parts[3]);
-
-            // Convert x → column
-            int column = (int)(x * keyCount / 512);
-
-            int endTime = time;
-
-            // Check if LN 
-            bool isLN = (type & 128) > 0;
-
-            if (isLN)
-            {
-                var lnParts = parts[5].Split(':');
-                endTime = int.Parse(lnParts[0]);
-            }
-
-            HitObject hitObject = new HitObject
-            {
-                column = column,
-                startTime = time,
-                endTime = endTime
-            };
-
-            return hitObject;
-        }
-
         // Converts the original hit objects into FLN format, using the specified gap to determine LN lengths
-        public List<HitObject> CreateFLN(List<HitObject> originalHitObjects, int gap)
+        public static List<HitObject> CreateFLN(List<HitObject> originalHitObjects, int gap)
         {       
             int minimumLnLengthMs = 20;
 
@@ -157,20 +146,20 @@ namespace CollectorFLN
                     if (noteDuration < minimumLnLengthMs)
                     {
                         flnHitObjects.Add(new HitObject
-                        {
-                            column = columnIndex,
-                            startTime = startTime,
-                            endTime = startTime
-                        });
+                        (
+                            columnIndex,
+                            startTime,
+                            startTime
+                        ));
                     }
                     else
                     {
                         flnHitObjects.Add(new HitObject
-                        {
-                            column = columnIndex,
-                            startTime = startTime,
-                            endTime = endTime
-                        });
+                        (
+                            columnIndex,
+                            startTime,
+                            endTime
+                        ));
                     }
                 }
             }
@@ -182,23 +171,140 @@ namespace CollectorFLN
                 .ToList();
         }
 
+        // Normalizes all timing points so the map scrolls at a constant visual speed.
+        // Red lines (uninherited) set BPM. Green lines (inherited) set SV as a negative inverse (-100 / SV).
+        // Output: a new list of green lines that cancel BPM changes, with all intentional SVs removed.
+        public static List<TimingPoint> NormalizeTimingPoints(List<TimingPoint> timingPoints, double targetBpm = -1)
+        {
+            if (timingPoints == null || timingPoints.Count == 0)
+            {
+                return new List<TimingPoint>();
+            }
+
+            var redLines = timingPoints.Where(tp => !tp.isInherited).ToList();
+
+            if (redLines.Count == 0)
+            {
+                return timingPoints.ToList();
+            }
+
+            if (targetBpm <= 0)
+            {
+                targetBpm = GetDominantBpm(redLines);
+            }
+
+            var result = new List<TimingPoint>();
+
+            foreach (var red in redLines)
+            {
+                result.Add(red);
+            }
+
+            var allOffsets = timingPoints
+                .Select(tp => tp.offset)
+                .Distinct()
+                .OrderBy(o => o)
+                .ToList();
+
+            TimingPoint currentRed = redLines[0];
+
+            foreach (var offset in allOffsets)
+            {
+                var redAtOffset = redLines.LastOrDefault(r => r.offset <= offset);
+
+                if (redAtOffset != null)
+                {
+                    currentRed = redAtOffset;
+                }
+
+                double currentBpm = 60000.0 / currentRed.beatLength;
+                double svMultiplier = targetBpm / currentBpm;
+                double normalizedBeatLength = -100.0 / svMultiplier;
+
+                var original = timingPoints.LastOrDefault(tp => tp.offset == offset);
+
+                result.Add(new TimingPoint(
+                    offset,
+                    normalizedBeatLength,
+                    original?.meter ?? 4,
+                    original?.sampleSet ?? 0,
+                    original?.sampleIndex ?? 0,
+                    original?.volume ?? 100,
+                    true,   // green line
+                    original?.effects ?? 0
+                ));
+            }
+
+            return result.OrderBy(tp => tp.offset).ThenBy(tp => tp.isInherited ? 1 : 0).ToList();
+        }
+
+        /// Returns the BPM that covers the most time in the map.
+        public static double GetDominantBpm(List<TimingPoint> redLines)
+        {
+            // Pair each red line with the offset of the next one to measure its duration
+            var durations = new Dictionary<double, double>();
+
+            for (int i = 0; i < redLines.Count; i++)
+            {
+                double bpm = 60000.0 / redLines[i].beatLength;
+                double start = redLines[i].offset;
+                double end = i + 1 < redLines.Count ? redLines[i + 1].offset : start + 9999999;
+                double span = end - start;
+
+                if (!durations.ContainsKey(bpm))
+                {
+                    durations[bpm] = 0;
+                }
+
+                durations[bpm] += span;
+            }
+
+            return durations.OrderByDescending(kv => kv.Value).First().Key;
+        }
+
         // Writes a new .osu file with the FLN hit objects and specified metadata, then creates an .osz archive containing the new .osu file and returns the path to the .osz
-        public string WriteNewOsuFile(string songsPath, string folderName, string originalFileName, List<HitObject> flnHitObjects, int keyCount, int gap, float hp, float od)
+        public string WriteNewOsuFile(string songsPath, string folderName, string originalFileName, List<TimingPoint> timingPoints, List<HitObject> flnHitObjects, int keyCount, int gap, bool removeSV, float hp, float od)
         {
             string originalPath = Path.Combine(songsPath, folderName, originalFileName);
+            string newFileName;
 
             // Create new filename for the FLN .osu file
-            string newFileName = $"{Path.GetFileNameWithoutExtension(originalFileName)}_FLN_G{gap}_OD{od}_HP{hp}.osu";
+            if (removeSV)
+            {
+                newFileName = $"{Path.GetFileNameWithoutExtension(originalFileName)}_FLN_G{gap}_OD{od}_HP{hp}_NSV.osu";
+            }
+            else
+            {
+                newFileName = $"{Path.GetFileNameWithoutExtension(originalFileName)}_FLN_G{gap}_OD{od}_HP{hp}.osu";
+            }
+
             string newPath = Path.Combine(songsPath, folderName, newFileName);
 
             List<string> outputLines = new List<string>();
+            bool inTimingPoints = false;
             bool inHitObjects = false;
-
+            
             foreach (string line in File.ReadLines(originalPath))
             {
+                // Fix outdated file format version
+                if (line.StartsWith("osu file format"))
+                {
+                    outputLines.Add("osu file format v14");
+                    continue;
+                }
+
                 if (line.StartsWith("Version:"))
                 {
-                    outputLines.Add(line + $" [FLN | {gap}ms | OD {od} | HP {hp}]");
+                    if (removeSV)
+                    {
+                        outputLines.Add(line + $" [FLN | {gap}ms | OD {od} | HP {hp} | NSV]");
+
+                    }
+                    else
+                    {
+                        outputLines.Add(line + $" [FLN | {gap}ms | OD {od} | HP {hp}]");
+                    }
+
                     continue;
                 }
                 if (line.StartsWith("OverallDifficulty:"))
@@ -226,6 +332,20 @@ namespace CollectorFLN
                     continue;
                 }
 
+                if (line.StartsWith("[TimingPoints]"))
+                {
+                    outputLines.Add(line);
+                    inTimingPoints = true;
+
+                    // Write normalized timing points
+                    foreach (var timingPoint in timingPoints)
+                    {
+                        string osuLine = $"{timingPoint.offset},{timingPoint.beatLength},{timingPoint.meter},{timingPoint.sampleSet},{timingPoint.sampleIndex},{timingPoint.volume},{(timingPoint.isInherited ? 0 : 1)},{timingPoint.effects}";
+                        outputLines.Add(osuLine);
+                    }
+                    continue;
+                }
+
                 if (line.StartsWith("[HitObjects]"))
                 {
                     outputLines.Add(line);
@@ -238,6 +358,16 @@ namespace CollectorFLN
                         outputLines.Add(osuLine);
                     }
 
+                    continue;
+                }
+
+                if (inTimingPoints)
+                {
+                    if (line.StartsWith("["))
+                    {
+                        inTimingPoints = false;
+                        outputLines.Add(line);
+                    }
                     continue;
                 }
 
@@ -271,7 +401,7 @@ namespace CollectorFLN
         }
 
         // Helper method to convert a HitObject into the string format used in .osu files, using the key count to determine the x position and whether it's a long note or rice note to determine the type and end time
-        private string ConvertToOsuFormat(HitObject hitObject, int keyCount)
+        private static string ConvertToOsuFormat(HitObject hitObject, int keyCount)
         {
             int x = (int)((hitObject.column + 0.5) * 512 / keyCount);
             int y = 192;
@@ -285,5 +415,47 @@ namespace CollectorFLN
             // Long note
             return $"{x},{y},{hitObject.startTime},128,0,{hitObject.endTime}:0:0:0:0:";
         }
-    }   
+
+        // Helper method to parse TimingPoint lines from .osu files
+        public static TimingPoint ParseTimingPoint(string line)
+        {
+            var parts = line.Split(',');
+
+            double offset = double.Parse(parts[0].Trim());
+            double beatLength = double.Parse(parts[1].Trim());
+            int meter = int.Parse(parts[2].Trim());
+            int sampleSet = int.Parse(parts[3].Trim());
+            int sampleIndex = int.Parse(parts[4].Trim());
+            int volume = int.Parse(parts[5].Trim());
+            bool isInherited = parts[6].Trim() == "0";
+            int effects = int.Parse(parts[7].Trim());
+
+            return new TimingPoint(offset, beatLength, meter, sampleSet, sampleIndex, volume, isInherited, effects);
+
+        }
+
+        // Helper method to parse HitObject lines from .osu files
+        public static HitObject ParseHitObject(string line, int keyCount)
+        {
+            var parts = line.Split(',');
+
+            int x = int.Parse(parts[0]);
+            int time = int.Parse(parts[2]);
+            int type = int.Parse(parts[3]);
+
+            int column = (int)(x * keyCount / 512);
+
+            int endTime = time;
+
+            bool isLN = (type & 128) > 0;
+
+            if (isLN)
+            {
+                var lnParts = parts[5].Split(':');
+                endTime = int.Parse(lnParts[0]);
+            }
+
+            return new HitObject(column, time, endTime);
+        }
+    }
 }

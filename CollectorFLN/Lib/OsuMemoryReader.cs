@@ -1,4 +1,5 @@
-﻿using OsuMemoryDataProvider;
+﻿using CollectorFLN.Lib;
+using OsuMemoryDataProvider;
 
 namespace CollectorFLN
 {
@@ -10,45 +11,54 @@ namespace CollectorFLN
     public class OsuMemoryReader
     {
         #pragma warning disable CS8618 
-        private StructuredOsuMemoryReader _reader;
-        #pragma warning restore CS8618 
+        private StructuredOsuMemoryReader reader;
+#pragma warning restore CS8618
 
-        public void Initialisation()
+        public OsuMemoryReader()
         {
-            _reader = StructuredOsuMemoryReader.Instance;
+            reader = StructuredOsuMemoryReader.Instance;
             Config config = new Config();
             string songsPath = config.SongPath;
         }
 
         // Retrieves map data from osu! memory and extracts metadata from the beatmap file
-        public (int beatmapId, string folderName, string fileName, string artist, string title, string version, string od, string hp) GetMapData(string songsPath)
+        public BeatmapData GetMapData(string songsPath)
         {
-            var addresses = _reader.OsuMemoryAddresses;
+            var addresses = reader.OsuMemoryAddresses;
 
-            _reader.TryRead(addresses.GeneralData);
+            reader.TryRead(addresses.GeneralData);
             
-            if (_reader.TryRead(addresses.Beatmap))
+            if (reader.TryRead(addresses.Beatmap))
             {
-                int beatmapId = addresses.Beatmap.Id;
                 string folderName = addresses.Beatmap.FolderName;
                 string fileName = addresses.Beatmap.OsuFileName;
-                
-                (string artist, string title, string version, string od, string hp) = GetMetadata(Path.Combine(songsPath, folderName, fileName));
 
-                return (beatmapId, folderName, fileName, artist, title, version, od, hp);
+                if (string.IsNullOrEmpty(folderName) || string.IsNullOrEmpty(fileName))
+                {
+                    return (new BeatmapData());
+                }
+
+                BeatmapData beatmapData = new BeatmapData();
+                beatmapData = GetMetadata(songsPath, folderName, fileName);
+
+                return (beatmapData);
             }
             
-            return (-1, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
+            return (new BeatmapData());
         }
 
         // Metadata extraction from .osu file, returns artist, title, version, OD and HP as strings
-        public (string artist, string title, string version, string od, string hp) GetMetadata(string fullPath)
+        public BeatmapData GetMetadata(string songsPath, string folderName, string fileName)
         {
             string artist = "";
             string title = "";
             string version = "";
             string od = "";
             string hp = "";
+
+            BeatmapData beatmapData = new BeatmapData();
+
+            string fullPath = Path.Combine(songsPath, folderName, fileName);
 
             foreach (string line in File.ReadLines(fullPath))
             {
@@ -77,7 +87,9 @@ namespace CollectorFLN
                 }
             }
 
-            return (artist, title, version, od, hp);
+            beatmapData.SetBeatmapData(folderName, fileName, artist, title, version, od, hp);
+
+            return (beatmapData);
         }
     }
 }

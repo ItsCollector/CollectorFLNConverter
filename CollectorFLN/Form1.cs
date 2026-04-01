@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using CollectorFLN.Lib;
+using System.Diagnostics;
 
 namespace CollectorFLN
 {
@@ -17,11 +18,9 @@ namespace CollectorFLN
 
         private CheckBox chkOverrideOD = null!;
         private CheckBox chkOverrideHP = null!;
+        private CheckBox chkRemoveSV = null!;
 
-        private int currentBeatmapId = -1;
-        private string currentFolderName = "";
-        private string currentFileName = "";
-        private string currentVersion = "";
+        private BeatmapData currentBeatmapData = new BeatmapData();
         public string songsPath = "";
 
         private OsuMemoryReader osuMemoryReader;
@@ -42,7 +41,9 @@ namespace CollectorFLN
             this.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
             this.ClientSize = new Size(440, 540);
             this.StartPosition = FormStartPosition.CenterScreen;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
+            this.Icon = new Icon("Assets/icon.ico");
 
             config = Config.Load();
             songsPath = config.SongPath;
@@ -53,13 +54,12 @@ namespace CollectorFLN
             this.Text = "Collector's FLN Converter";
 
             osuMemoryReader = new OsuMemoryReader();
-            osuMemoryReader.Initialisation();
 
             memoryTimer = new System.Windows.Forms.Timer();
             memoryTimer.Interval = 500;
             memoryTimer.Tick += MemoryTimer_Tick;
 
-            if (config.SongPath != "" && config.ExePath != "")
+            if (!string.IsNullOrEmpty(config.SongPath) && !string.IsNullOrEmpty(config.ExePath))
             {
                 memoryTimer.Start();
             }
@@ -192,7 +192,7 @@ namespace CollectorFLN
 
             // ── Gap row ─────────────────────────────────────────────
             var lblGap = MakeLabel("Gap (ms)", new Point(16, 46), 9f, textMuted);
-            txtGap = MakeTextBox($"{config.Gap}", new Point(282, 42), new Size(70, 26));
+            txtGap = MakeTextBox($"{config.Gap}", new Point(175, 42), new Size(70, 26));
 
             txtGap.TextChanged += (s, e) =>
             {
@@ -203,11 +203,31 @@ namespace CollectorFLN
                 }
             };
 
+            // ── SV checkbox ─────────────────────────────────────────
+            chkRemoveSV = new CheckBox
+            {
+                Text = "Remove SV",
+                Location = new Point(282, 44),
+                AutoSize = true,
+                Checked = config.RemoveSV,
+                ForeColor = textMuted,
+                BackColor = Color.Transparent,
+                Font = new Font("Segoe UI", 8.5f),
+                Cursor = Cursors.Hand
+            };
+
+            chkRemoveSV.CheckedChanged += (s, e) =>
+            {
+                chkRemoveSV.ForeColor = chkRemoveSV.Checked ? accent : textMuted;
+                config.RemoveSV = chkRemoveSV.Checked;
+                config.Save();
+            };
+
             // ── OD row ──────────────────────────────────────────────
             var lblOD = MakeLabel("Overall Difficulty", new Point(16, 86), 9f, textMuted);
-            txtOD = MakeTextBox($"{config.OD}", new Point(282, 82), new Size(70, 26));
+            txtOD = MakeTextBox($"{config.OD}", new Point(175, 84), new Size(70, 26));
             txtOD.Enabled = config.OverrideOD;
-
+            
             txtOD.TextChanged += (s, e) =>
             {
                 if (float.TryParse(txtOD.Text, out float od))
@@ -220,13 +240,13 @@ namespace CollectorFLN
             chkOverrideOD = new CheckBox
             {
                 Text = "Override",
-                Location = new Point(175, 84),
+                Location = new Point(282, 82),
                 AutoSize = true,
+                Checked = config.OverrideOD,
                 ForeColor = textMuted,
                 BackColor = Color.Transparent,
                 Font = new Font("Segoe UI", 8.5f),
-                Cursor = Cursors.Hand,
-                Checked = config.OverrideOD
+                Cursor = Cursors.Hand
             };
 
             chkOverrideOD.CheckedChanged += (s, e) =>
@@ -239,7 +259,7 @@ namespace CollectorFLN
 
             // ── HP row ──────────────────────────────────────────────
             var lblHP = MakeLabel("HP Drain", new Point(16, 126), 9f, textMuted);
-            txtHP = MakeTextBox($"{config.HP}", new Point(282, 122), new Size(70, 26));
+            txtHP = MakeTextBox($"{config.HP}", new Point(175, 124), new Size(70, 26));
             txtHP.Enabled = config.OverrideHP;
 
             txtHP.TextChanged += (s, e) =>
@@ -254,13 +274,13 @@ namespace CollectorFLN
             chkOverrideHP = new CheckBox
             {
                 Text = "Override",
-                Location = new Point(175, 124),
+                Location = new Point(282, 122),
                 AutoSize = true,
+                Checked = config.OverrideHP,
                 ForeColor = textMuted,
                 BackColor = Color.Transparent,
                 Font = new Font("Segoe UI", 8.5f),
-                Cursor = Cursors.Hand,
-                Checked = config.OverrideHP
+                Cursor = Cursors.Hand
             };
 
             chkOverrideHP.CheckedChanged += (s, e) =>
@@ -279,7 +299,7 @@ namespace CollectorFLN
             cardParams.Controls.AddRange(new Control[]
             {
                 paramHeader, divider,
-                lblGap, txtGap,
+                lblGap, txtGap, chkRemoveSV,
                 lblOD, txtOD, chkOverrideOD,
                 lblHP, txtHP, chkOverrideHP
             });
@@ -353,7 +373,12 @@ namespace CollectorFLN
             // ══════════════════════════════════════════════════════════
             // ADD ALL TO FORM
             // ══════════════════════════════════════════════════════════
-            Controls.AddRange(new Control[] { cardInfo, cardParams, btnConvert, btnLinkOsu, cardLog });
+            Controls.AddRange(new Control[] { cardInfo, cardParams, btnConvert, btnLinkOsu, cardLog});
+
+            // Update Check Button forecolour based on config
+            chkRemoveSV.ForeColor = chkRemoveSV.Checked ? accent : textMuted;
+            chkOverrideOD.ForeColor = chkOverrideOD.Checked ? accent : textMuted;
+            chkOverrideHP.ForeColor = chkOverrideHP.Checked ? accent : textMuted;
 
             // Check if the Osu! folder is linked, if not, it will show a button and ask to link the folder before continuing. 
             if (string.IsNullOrEmpty(config.SongPath) || string.IsNullOrEmpty(config.ExePath))
@@ -372,12 +397,13 @@ namespace CollectorFLN
         private void BtnConvert_Click(object? sender, EventArgs e)
         {
             int gap = int.TryParse(txtGap.Text, out int g) ? g : 80;
+            bool removeSV = chkRemoveSV.Checked;
             float od = int.TryParse(txtOD.Text, out int o) ? o : 0;
             float hp = int.TryParse(txtHP.Text, out int h) ? h : 6;
             btnConvert.Enabled = false;
 
             // Call Conversion Stack
-            ConversionStack(currentBeatmapId, currentFolderName, currentFileName, gap, od, hp);
+            ConversionStack(gap, removeSV, od, hp);
             btnConvert.Enabled = true;
         }
 
@@ -426,53 +452,50 @@ namespace CollectorFLN
         // Timer tick event to continuously read osu! memory and update map info on the UI
         private void MemoryTimer_Tick(object? sender, EventArgs e)
         {
-            var (beatmapId, folderName, fileName, artist, title, version, od, hp) = osuMemoryReader.GetMapData(songsPath);
+            BeatmapData incomingBeatmapData = osuMemoryReader.GetMapData(songsPath);
 
-            btnConvert.Enabled = currentBeatmapId != -1;
+            btnConvert.Enabled = !string.IsNullOrEmpty(currentBeatmapData.fileName);
 
-            if (beatmapId != -1 && fileName != currentFileName && version != currentVersion)
+            if (incomingBeatmapData.fileName != currentBeatmapData.fileName && incomingBeatmapData.version != currentBeatmapData.version)
             {
-                currentBeatmapId = beatmapId;
-                currentFolderName = folderName;
-                currentFileName = fileName;
-                currentVersion = version;
+                currentBeatmapData = incomingBeatmapData;
 
-                lblSelectedMap.Text = $"{title}";
-                lblSelectedArtist.Text = $"{artist}";
-                lblVersion.Text = $"{version}";
+                lblSelectedMap.Text = $"{currentBeatmapData.title}";
+                lblSelectedArtist.Text = $"{currentBeatmapData.artist}";
+                lblVersion.Text = $"{currentBeatmapData.version}";
 
                 if (!chkOverrideOD.Checked)
                 {
-                    txtOD.Text = $"{od}";
+                    txtOD.Text = $"{currentBeatmapData.od}";
                 }
 
                 if (!chkOverrideHP.Checked)
                 {
-                    txtHP.Text = $"{hp}";
+                    txtHP.Text = $"{currentBeatmapData.hp}";
                 }
             }
         }
 
         // FLN Conversion Stack: Extract → Create FLN → Write new .osu → Open in osu!
-        public void ConversionStack(int currentBeatmapId, string currentFolderName, string currentFileName, int gap, float od, float hp)
+        public void ConversionStack(int gap, bool removeSV, float od, float hp)
         {
-            txtLog.AppendText($"Starting conversion for {currentFileName}\r\n");
+            txtLog.AppendText($"Starting conversion for {currentBeatmapData.fileName}\r\n");
 
-            if (currentBeatmapId == -1)
+            if (string.IsNullOrEmpty(currentBeatmapData.folderName) || string.IsNullOrEmpty(currentBeatmapData.fileName))
             {
                 txtLog.AppendText("Error: No map detected.\r\n");
                 return;
             }
 
             // Prevent duplicate conversion
-            if (currentVersion.Contains("FLN", StringComparison.OrdinalIgnoreCase))
+            if (currentBeatmapData.version.Contains("FLN", StringComparison.OrdinalIgnoreCase))
             {
                 txtLog.AppendText("This map is already an FLN map.\r\n");
                 return;
             }
 
             // File exists check
-            string fullPath = Path.Combine(songsPath, currentFolderName, currentFileName);
+            string fullPath = Path.Combine(songsPath, currentBeatmapData.folderName, currentBeatmapData.fileName);
 
             if (!File.Exists(fullPath))
             {
@@ -481,30 +504,55 @@ namespace CollectorFLN
             }
 
             Converter converter = new Converter();
+            List<TimingPoint> newTimingPoints = new List<TimingPoint>();
 
+            if (Converter.GetMapGamemode(songsPath, currentBeatmapData.folderName, currentBeatmapData.fileName) != 3)
+            {
+                txtLog.AppendText("Error: Only osu!mania maps are supported.\r\n");
+                return;
+            }
+
+            // Begin Conversion process
             try
             {
-                var (hitObjects, keyCount) = converter.ExtractHitObjects(
+                // Extract data from target beatmap
+                var (timingPoints, hitObjects, keyCount) = converter.ExtractData(
                     songsPath,
-                    currentFolderName,
-                    currentFileName
+                    currentBeatmapData.folderName,
+                    currentBeatmapData.fileName
                 );
 
-                var flnObjects = converter.CreateFLN(hitObjects, gap);
+                // Normalize timing points if SV removal is enabled, otherwise keep original timing points
+                if (removeSV)
+                {
+                    double targetBpm = Converter.GetDominantBpm(timingPoints);
+                    newTimingPoints = Converter.NormalizeTimingPoints(timingPoints, targetBpm);
+                }
+                else
+                {
+                    newTimingPoints = timingPoints;
+                }
 
+                // Create FLN hit objects based on extracted data and user-defined gap
+                var flnObjects = Converter.CreateFLN(hitObjects, gap);
+
+                // Write new .osu file with FLN objects and updated timing points
                 string newOsuFile = converter.WriteNewOsuFile(
                     songsPath,
-                    currentFolderName,
-                    currentFileName,
+                    currentBeatmapData.folderName,
+                    currentBeatmapData.fileName,
+                    newTimingPoints,
                     flnObjects,
                     keyCount,
                     gap,
+                    removeSV,
                     hp,
                     od
                 );
 
                 txtLog.AppendText("Conversion complete!\r\n");
 
+                // Open the new FLN map in osu!
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = newOsuFile,

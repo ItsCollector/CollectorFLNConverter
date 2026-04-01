@@ -12,6 +12,7 @@ namespace CollectorFLN
         public int Gap { get; set; } = 80;
         public bool OverrideOD { get; set; } = true;
         public bool OverrideHP { get; set; } = true;
+        public bool RemoveSV { get; set; } = true;
 
         private static readonly string configFile = "config.json";
 

@@ -16,4 +16,14 @@
 		<PackageReference Include="OsuMemoryDataProvider" Version="0.12.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Assets\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Assets\icon.ico">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>
