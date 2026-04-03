@@ -21,6 +21,7 @@ A tool for Osu!mania to convert charts to full long note
 - Enjoy converting maps
 
 ## Notes
+- Move .osu file parsing functions to its own class for maintainablilty improvement
 - Only supports osu! (stable), not osu!lazer
 - Requires osu! to be running
 - Works for Windows only
