@@ -21,12 +21,12 @@ A tool for Osu!mania to convert charts to full long note
 - Enjoy converting maps
 
 ## Notes
-- Move .osu file parsing functions to its own class for maintainablilty improvement
 - Only supports osu! (stable), not osu!lazer
 - Requires osu! to be running
 - Works for Windows only
 
 ## To-do List
+- Move .osu file parsing functions to its own class for maintainablilty improvement
 - Native linux support
 - Option to use snap-based LN gaps 
 - There was some bug that my friend got that went away instantly and I think I know what caused it
