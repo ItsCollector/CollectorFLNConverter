@@ -1,5 +1,6 @@
 ﻿using CollectorFLN.Lib;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace CollectorFLN
 {
@@ -453,7 +454,7 @@ namespace CollectorFLN
         private void MemoryTimer_Tick(object? sender, EventArgs e)
         {
             BeatmapData incomingBeatmapData = osuMemoryReader.GetMapData(songsPath);
-
+            
             btnConvert.Enabled = !string.IsNullOrEmpty(currentBeatmapData.fileName);
 
             if (incomingBeatmapData.fileName != currentBeatmapData.fileName && incomingBeatmapData.version != currentBeatmapData.version)

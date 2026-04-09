@@ -340,7 +340,14 @@ namespace CollectorFLN
                     // Write normalized timing points
                     foreach (var timingPoint in timingPoints)
                     {
-                        string osuLine = $"{timingPoint.offset},{timingPoint.beatLength},{timingPoint.meter},{timingPoint.sampleSet},{timingPoint.sampleIndex},{timingPoint.volume},{(timingPoint.isInherited ? 0 : 1)},{timingPoint.effects}";
+                        string osuLine = 
+                            $"{timingPoint.offset}," +
+                            $"{timingPoint.beatLength}," +
+                            $"{timingPoint.meter},{timingPoint.sampleSet}," +
+                            $"{timingPoint.sampleIndex},{timingPoint.volume}," +
+                            $"{(timingPoint.isInherited ? 0 : 1)}," +
+                            $"{timingPoint.effects}";
+
                         outputLines.Add(osuLine);
                     }
                     continue;
