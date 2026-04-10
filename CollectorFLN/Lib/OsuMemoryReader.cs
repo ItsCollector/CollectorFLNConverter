@@ -12,7 +12,7 @@ namespace CollectorFLN
     {
         #pragma warning disable CS8618 
         private StructuredOsuMemoryReader reader;
-#pragma warning restore CS8618
+        #pragma warning restore CS8618
 
         public OsuMemoryReader()
         {

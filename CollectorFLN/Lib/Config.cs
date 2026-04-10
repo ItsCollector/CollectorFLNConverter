@@ -6,7 +6,6 @@ namespace CollectorFLN
     {
         // Configuration settings
         public string SongPath { get; set; } = "";
-        public string ExePath { get; set; } = "";
         public float OD { get; set; } = 0;
         public float HP { get; set; } = 6;
         public int Gap { get; set; } = 80;
@@ -35,7 +34,7 @@ namespace CollectorFLN
                 var config = JsonSerializer.Deserialize<Config>(json) ?? new Config();
 
                 // If paths are still empty, try detect once
-                if (string.IsNullOrEmpty(config.SongPath) || string.IsNullOrEmpty(config.ExePath))
+                if (string.IsNullOrEmpty(config.SongPath))
                 {
                     config.FetchDefaultDirectory();
                 }
@@ -64,19 +63,25 @@ namespace CollectorFLN
         // Fetches the osu! Songs directory path and executable path from the user's local application data
         void FetchDefaultDirectory()
         {
-            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string osuPath = Path.Combine(localAppDataPath, "osu!");
+            var possiblePaths = new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "osu!", "Songs"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "osu!", "Songs"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "osu!", "Songs"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "osu!", "Songs")
+            };
 
-            if (Directory.Exists(osuPath))
+            foreach (var path in possiblePaths)
             {
-                SongPath = Path.Combine(osuPath, "Songs");
-                ExePath = Path.Combine(osuPath, "osu!.exe");
-                Save();
+                if (Directory.Exists(path))
+                {
+                    SongPath = path;
+                    Save();
+                    return;
+                }
             }
-            else
-            {
-                Console.WriteLine("Could not find osu! directory. Please ensure osu! is installed and run the program again.");
-            }
+
+            Console.WriteLine("Could not auto-detect osu! Songs folder.");
         }
     }
 }

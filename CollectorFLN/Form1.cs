@@ -60,7 +60,7 @@ namespace CollectorFLN
             memoryTimer.Interval = 500;
             memoryTimer.Tick += MemoryTimer_Tick;
 
-            if (!string.IsNullOrEmpty(config.SongPath) && !string.IsNullOrEmpty(config.ExePath))
+            if (!string.IsNullOrEmpty(config.SongPath))
             {
                 memoryTimer.Start();
             }
@@ -327,7 +327,7 @@ namespace CollectorFLN
 
             btnLinkOsu = new Button
             {
-                Text = "LINK OSU FOLDER",
+                Text = "LINK OSU SONGS FOLDER",
                 Size = new Size(400, 44),
                 Location = new Point(20, 304),
                 FlatStyle = FlatStyle.Flat,
@@ -382,9 +382,9 @@ namespace CollectorFLN
             chkOverrideHP.ForeColor = chkOverrideHP.Checked ? accent : textMuted;
 
             // Check if the Osu! folder is linked, if not, it will show a button and ask to link the folder before continuing. 
-            if (string.IsNullOrEmpty(config.SongPath) || string.IsNullOrEmpty(config.ExePath))
+            if (string.IsNullOrEmpty(config.SongPath))
             {
-                txtLog.AppendText("No osu! folder linked. Please link your osu! folder to enable conversion.\r\n");
+                txtLog.AppendText("No osu! songs folder linked. Please link your osu! songs folder to enable conversion.\r\n");
                 btnLinkOsu.Visible = true;
                 btnConvert.Visible = false;
             }
@@ -412,34 +412,17 @@ namespace CollectorFLN
         {
             using (var dialog = new FolderBrowserDialog())
             {
-                dialog.Description = "Select your osu! folder";
+                dialog.Description = "Select your osu! songs folder";
                 dialog.UseDescriptionForTitle = true;
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    string selectedPath = dialog.SelectedPath;
-
-                    // Save to config
-                    string songsPath = Path.Combine(selectedPath, "Songs");
-                    string exePath = Path.Combine(selectedPath, "osu!.exe");
-
-                    // Validate folder
-                    if (!Directory.Exists(songsPath) || !File.Exists(exePath))
-                    {
-                        MessageBox.Show(
-                            "Invalid osu! folder.\nMake sure it contains 'Songs' and 'osu!.exe'.",
-                            "Error",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error
-                        );
-                        return;
-                    }
+                    string songsPath = dialog.SelectedPath;
 
                     config.SongPath = songsPath;
-                    config.ExePath = exePath;
                     config.Save();
 
-                    txtLog.AppendText($"Songs folder set to:\r\n{selectedPath}\r\n");
+                    txtLog.AppendText($"Songs folder set to:\r\n{songsPath}\r\n");
 
                     btnLinkOsu.Visible = false;
                     btnConvert.Visible = true;
@@ -453,9 +436,23 @@ namespace CollectorFLN
         // Timer tick event to continuously read osu! memory and update map info on the UI
         private void MemoryTimer_Tick(object? sender, EventArgs e)
         {
-            BeatmapData incomingBeatmapData = osuMemoryReader.GetMapData(songsPath);
-            
-            btnConvert.Enabled = !string.IsNullOrEmpty(currentBeatmapData.fileName);
+            BeatmapData incomingBeatmapData;
+
+            try
+            {
+                incomingBeatmapData = osuMemoryReader.GetMapData(songsPath);
+            }
+            catch
+            {
+                return; // silently ignore bad reads
+            }
+
+            if (incomingBeatmapData == null || string.IsNullOrEmpty(incomingBeatmapData.fileName))
+            {
+                return;
+            }
+
+            btnConvert.Enabled = !string.IsNullOrEmpty(incomingBeatmapData.fileName);
 
             if (incomingBeatmapData.fileName != currentBeatmapData.fileName && incomingBeatmapData.version != currentBeatmapData.version)
             {
@@ -482,7 +479,7 @@ namespace CollectorFLN
         {
             txtLog.AppendText($"Starting conversion for {currentBeatmapData.fileName}\r\n");
 
-            if (string.IsNullOrEmpty(currentBeatmapData.folderName) || string.IsNullOrEmpty(currentBeatmapData.fileName))
+            if (string.IsNullOrEmpty(songsPath) || string.IsNullOrEmpty(currentBeatmapData.folderName) || string.IsNullOrEmpty(currentBeatmapData.fileName))
             {
                 txtLog.AppendText("Error: No map detected.\r\n");
                 return;
@@ -504,10 +501,10 @@ namespace CollectorFLN
                 return;
             }
 
-            Converter converter = new Converter();
+            BeatmapParser parser = new BeatmapParser();
             List<TimingPoint> newTimingPoints = new List<TimingPoint>();
 
-            if (Converter.GetMapGamemode(songsPath, currentBeatmapData.folderName, currentBeatmapData.fileName) != 3)
+            if (BeatmapParser.GetMapGamemode(songsPath, currentBeatmapData.folderName, currentBeatmapData.fileName) != 3)
             {
                 txtLog.AppendText("Error: Only osu!mania maps are supported.\r\n");
                 return;
@@ -517,7 +514,7 @@ namespace CollectorFLN
             try
             {
                 // Extract data from target beatmap
-                var (timingPoints, hitObjects, keyCount) = converter.ExtractData(
+                var (timingPoints, hitObjects, keyCount) = parser.ExtractData(
                     songsPath,
                     currentBeatmapData.folderName,
                     currentBeatmapData.fileName
@@ -533,6 +530,8 @@ namespace CollectorFLN
                 {
                     newTimingPoints = timingPoints;
                 }
+
+                Converter converter = new Converter();
 
                 // Create FLN hit objects based on extracted data and user-defined gap
                 var flnObjects = Converter.CreateFLN(hitObjects, gap);
