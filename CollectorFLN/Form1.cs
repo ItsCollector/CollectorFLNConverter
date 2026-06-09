@@ -21,7 +21,12 @@ namespace CollectorFLN
         private CheckBox chkOverrideHP = null!;
         private CheckBox chkRemoveSV = null!;
 
-        private BeatmapData currentBeatmapData = new BeatmapData();
+        private RadioButton rbMsMode = null!;
+        private RadioButton rbSnapMode = null!;
+        private ComboBox cmbSnapDivisor = null!;
+        private Label lblGapLabel = null!;
+
+        private BeatmapMemorySnapshot currentSnapshot = new BeatmapMemorySnapshot();
         public string songsPath = "";
 
         private OsuMemoryReader osuMemoryReader;
@@ -78,7 +83,7 @@ namespace CollectorFLN
 
             this.BackColor = bg;
             this.ForeColor = textPrim;
-            this.ClientSize = new Size(440, 560);
+            this.ClientSize = new Size(440, 596);
 
             // ── Helper: styled label ─────────────────────────────────
             Label MakeLabel(string text, Point loc, float size = 9f,
@@ -178,7 +183,7 @@ namespace CollectorFLN
             // ══════════════════════════════════════════════════════════
             // SECTION 2 — Parameters Card
             // ══════════════════════════════════════════════════════════
-            var cardParams = MakeCard(new Point(20, 120), new Size(400, 170));
+            var cardParams = MakeCard(new Point(20, 120), new Size(400, 206));
 
             var paramHeader = MakeLabel("PARAMETERS", new Point(16, 12),
                                         7.5f, textMuted, FontStyle.Bold);
@@ -191,9 +196,40 @@ namespace CollectorFLN
                 BackColor = border
             };
 
-            // ── Gap row ─────────────────────────────────────────────
-            var lblGap = MakeLabel("Gap (ms)", new Point(16, 46), 9f, textMuted);
-            txtGap = MakeTextBox($"{config.Gap}", new Point(175, 42), new Size(70, 26));
+            // ── Gap Mode toggle row ─────────────────────────────────
+            var lblGapMode = MakeLabel("Gap Mode", new Point(16, 44), 9f, textMuted);
+
+            rbMsMode = new RadioButton
+            {
+                Text = "ms",
+                Location = new Point(175, 42),
+                AutoSize = true,
+                Checked = !config.UseSnapMode,
+                ForeColor = !config.UseSnapMode ? accent : textMuted,
+                BackColor = Color.Transparent,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+
+            rbSnapMode = new RadioButton
+            {
+                Text = "snap",
+                Location = new Point(240, 42),
+                AutoSize = true,
+                Checked = config.UseSnapMode,
+                ForeColor = config.UseSnapMode ? accent : textMuted,
+                BackColor = Color.Transparent,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+
+            // ── Gap input row ───────────────────────────────────────
+            lblGapLabel = MakeLabel(
+                config.UseSnapMode ? "Gap (snap)" : "Gap (ms)",
+                new Point(16, 80), 9f, textMuted);
+
+            txtGap = MakeTextBox($"{config.Gap}", new Point(175, 76), new Size(70, 26));
+            txtGap.Visible = !config.UseSnapMode;
 
             txtGap.TextChanged += (s, e) =>
             {
@@ -204,11 +240,66 @@ namespace CollectorFLN
                 }
             };
 
+            // ── Snap divisor ComboBox ────────────────────────────────
+            cmbSnapDivisor = new ComboBox
+            {
+                Location = new Point(175, 76),
+                Size = new Size(70, 26),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = Color.FromArgb(38, 38, 52),
+                ForeColor = textPrim,
+                Font = new Font("Segoe UI", 10f),
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand,
+                Visible = config.UseSnapMode
+            };
+
+            // Populate snap divisor options
+            var snapOptions = new[] { "1/2", "1/3", "1/4", "1/6", "1/8", "1/12", "1/16" };
+            cmbSnapDivisor.Items.AddRange(snapOptions);
+
+            // Select the matching item based on saved config
+            string savedSnap = $"1/{config.SnapDivisor}";
+            int savedIndex = Array.IndexOf(snapOptions, savedSnap);
+            cmbSnapDivisor.SelectedIndex = savedIndex >= 0 ? savedIndex : 2; // default 1/4
+
+            cmbSnapDivisor.SelectedIndexChanged += (s, e) =>
+            {
+                if (cmbSnapDivisor.SelectedItem is string selected)
+                {
+                    // Parse "1/4" → 4
+                    string[] parts = selected.Split('/');
+                    if (parts.Length == 2 && int.TryParse(parts[1], out int divisor))
+                    {
+                        config.SnapDivisor = divisor;
+                        config.Save();
+                    }
+                }
+            };
+
+            // ── Gap mode toggle handler ─────────────────────────────
+            void UpdateGapModeUI()
+            {
+                bool isSnap = rbSnapMode.Checked;
+                config.UseSnapMode = isSnap;
+                config.Save();
+
+                txtGap.Visible = !isSnap;
+                cmbSnapDivisor.Visible = isSnap;
+                lblGapLabel.Text = isSnap ? "Gap (snap)" : "Gap (ms)";
+
+                rbMsMode.ForeColor = !isSnap ? accent : textMuted;
+                rbSnapMode.ForeColor = isSnap ? accent : textMuted;
+            }
+
+            rbMsMode.CheckedChanged += (s, e) => { if (rbMsMode.Checked) UpdateGapModeUI(); };
+            rbSnapMode.CheckedChanged += (s, e) => { if (rbSnapMode.Checked) UpdateGapModeUI(); };
+
             // ── SV checkbox ─────────────────────────────────────────
             chkRemoveSV = new CheckBox
             {
                 Text = "Remove SV",
-                Location = new Point(282, 44),
+                Location = new Point(282, 78),
                 AutoSize = true,
                 Checked = config.RemoveSV,
                 ForeColor = textMuted,
@@ -225,10 +316,10 @@ namespace CollectorFLN
             };
 
             // ── OD row ──────────────────────────────────────────────
-            var lblOD = MakeLabel("Overall Difficulty", new Point(16, 86), 9f, textMuted);
-            txtOD = MakeTextBox($"{config.OD}", new Point(175, 84), new Size(70, 26));
+            var lblOD = MakeLabel("Overall Difficulty", new Point(16, 120), 9f, textMuted);
+            txtOD = MakeTextBox($"{config.OD}", new Point(175, 118), new Size(70, 26));
             txtOD.Enabled = config.OverrideOD;
-            
+
             txtOD.TextChanged += (s, e) =>
             {
                 if (float.TryParse(txtOD.Text, out float od))
@@ -241,7 +332,7 @@ namespace CollectorFLN
             chkOverrideOD = new CheckBox
             {
                 Text = "Override",
-                Location = new Point(282, 82),
+                Location = new Point(282, 116),
                 AutoSize = true,
                 Checked = config.OverrideOD,
                 ForeColor = textMuted,
@@ -259,8 +350,8 @@ namespace CollectorFLN
             };
 
             // ── HP row ──────────────────────────────────────────────
-            var lblHP = MakeLabel("HP Drain", new Point(16, 126), 9f, textMuted);
-            txtHP = MakeTextBox($"{config.HP}", new Point(175, 124), new Size(70, 26));
+            var lblHP = MakeLabel("HP Drain", new Point(16, 160), 9f, textMuted);
+            txtHP = MakeTextBox($"{config.HP}", new Point(175, 158), new Size(70, 26));
             txtHP.Enabled = config.OverrideHP;
 
             txtHP.TextChanged += (s, e) =>
@@ -275,7 +366,7 @@ namespace CollectorFLN
             chkOverrideHP = new CheckBox
             {
                 Text = "Override",
-                Location = new Point(282, 122),
+                Location = new Point(282, 156),
                 AutoSize = true,
                 Checked = config.OverrideHP,
                 ForeColor = textMuted,
@@ -296,11 +387,14 @@ namespace CollectorFLN
             var tt = new ToolTip { InitialDelay = 300, ReshowDelay = 100 };
             tt.SetToolTip(chkOverrideOD, "Override the map's default Overall Difficulty value.");
             tt.SetToolTip(chkOverrideHP, "Override the map's default HP Drain value.");
+            tt.SetToolTip(rbMsMode, "Use a fixed millisecond value for LN gaps.");
+            tt.SetToolTip(rbSnapMode, "Use beat snap divisor for LN gaps (adapts to BPM).");
 
             cardParams.Controls.AddRange(new Control[]
             {
                 paramHeader, divider,
-                lblGap, txtGap, chkRemoveSV,
+                lblGapMode, rbMsMode, rbSnapMode,
+                lblGapLabel, txtGap, cmbSnapDivisor, chkRemoveSV,
                 lblOD, txtOD, chkOverrideOD,
                 lblHP, txtHP, chkOverrideHP
             });
@@ -312,7 +406,7 @@ namespace CollectorFLN
             {
                 Text = "CONVERT",
                 Size = new Size(400, 44),
-                Location = new Point(20, 304),
+                Location = new Point(20, 340),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = accent,
                 ForeColor = Color.FromArgb(18, 18, 24),  // dark text on pink
@@ -329,7 +423,7 @@ namespace CollectorFLN
             {
                 Text = "LINK OSU SONGS FOLDER",
                 Size = new Size(400, 44),
-                Location = new Point(20, 304),
+                Location = new Point(20, 340),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = accent,
                 ForeColor = Color.FromArgb(18, 18, 24),  // dark text on pink
@@ -345,7 +439,7 @@ namespace CollectorFLN
             // ══════════════════════════════════════════════════════════
             // SECTION 4 — Log Card
             // ══════════════════════════════════════════════════════════
-            var cardLog = MakeCard(new Point(20, 364), new Size(400, 172));
+            var cardLog = MakeCard(new Point(20, 400), new Size(400, 172));
 
             var logHeader = MakeLabel("LOG", new Point(16, 10), 7.5f, textMuted, FontStyle.Bold);
 
@@ -374,7 +468,7 @@ namespace CollectorFLN
             // ══════════════════════════════════════════════════════════
             // ADD ALL TO FORM
             // ══════════════════════════════════════════════════════════
-            Controls.AddRange(new Control[] { cardInfo, cardParams, btnConvert, btnLinkOsu, cardLog});
+            Controls.AddRange(new Control[] { cardInfo, cardParams, btnConvert, btnLinkOsu, cardLog });
 
             // Update Check Button forecolour based on config
             chkRemoveSV.ForeColor = chkRemoveSV.Checked ? accent : textMuted;
@@ -401,10 +495,12 @@ namespace CollectorFLN
             bool removeSV = chkRemoveSV.Checked;
             float od = int.TryParse(txtOD.Text, out int o) ? o : 0;
             float hp = int.TryParse(txtHP.Text, out int h) ? h : 6;
+            bool useSnap = config.UseSnapMode;
+            int snapDivisor = config.SnapDivisor;
             btnConvert.Enabled = false;
 
             // Call Conversion Stack
-            ConversionStack(gap, removeSV, od, hp);
+            ConversionStack(gap, removeSV, od, hp, useSnap, snapDivisor);
             btnConvert.Enabled = true;
         }
 
@@ -436,118 +532,105 @@ namespace CollectorFLN
         // Timer tick event to continuously read osu! memory and update map info on the UI
         private void MemoryTimer_Tick(object? sender, EventArgs e)
         {
-            BeatmapData incomingBeatmapData;
+            BeatmapMemorySnapshot? incomingSnapshot;
 
             try
             {
-                incomingBeatmapData = osuMemoryReader.GetMapData(songsPath);
+                incomingSnapshot = osuMemoryReader.GetMapData(songsPath);
             }
             catch
             {
                 return; // silently ignore bad reads
             }
 
-            if (incomingBeatmapData == null || string.IsNullOrEmpty(incomingBeatmapData.fileName))
+            if (incomingSnapshot == null)
             {
                 return;
             }
 
-            btnConvert.Enabled = !string.IsNullOrEmpty(incomingBeatmapData.fileName);
+            btnConvert.Enabled = !string.IsNullOrEmpty(incomingSnapshot.fileName) && incomingSnapshot.gamemode == "3";
 
-            if (incomingBeatmapData.fileName != currentBeatmapData.fileName && incomingBeatmapData.version != currentBeatmapData.version)
+            if (incomingSnapshot.fileName != currentSnapshot.fileName && incomingSnapshot.version != currentSnapshot.version)
             {
-                currentBeatmapData = incomingBeatmapData;
+                currentSnapshot = incomingSnapshot;
 
-                lblSelectedMap.Text = $"{currentBeatmapData.title}";
-                lblSelectedArtist.Text = $"{currentBeatmapData.artist}";
-                lblVersion.Text = $"{currentBeatmapData.version}";
+                lblSelectedMap.Text = $"{currentSnapshot.title}";
+                lblSelectedArtist.Text = $"{currentSnapshot.artist}";
+                lblVersion.Text = $"{currentSnapshot.version}";
 
                 if (!chkOverrideOD.Checked)
                 {
-                    txtOD.Text = $"{currentBeatmapData.od}";
+                    txtOD.Text = $"{currentSnapshot.od}";
                 }
 
                 if (!chkOverrideHP.Checked)
                 {
-                    txtHP.Text = $"{currentBeatmapData.hp}";
+                    txtHP.Text = $"{currentSnapshot.hp}";
                 }
             }
         }
 
         // FLN Conversion Stack: Extract → Create FLN → Write new .osu → Open in osu!
-        public void ConversionStack(int gap, bool removeSV, float od, float hp)
+        public void ConversionStack(int gap, bool removeSV, float od, float hp, bool useSnapMode = false, int snapDivisor = 4)
         {
-            txtLog.AppendText($"Starting conversion for {currentBeatmapData.fileName}\r\n");
-
-            if (string.IsNullOrEmpty(songsPath) || string.IsNullOrEmpty(currentBeatmapData.folderName) || string.IsNullOrEmpty(currentBeatmapData.fileName))
+            string modeLabel = useSnapMode ? $"1/{snapDivisor} snap" : $"{gap}ms";
+            txtLog.AppendText($"Starting conversion ({modeLabel}) for {currentSnapshot.fileName}.\r\n");
+            txtLog.AppendText($"Options - Remove SV: {removeSV}, Override OD: {chkOverrideOD.Checked}, Override HP: {chkOverrideHP.Checked}\r\n");
+            if (!MapValidation())
             {
-                txtLog.AppendText("Error: No map detected.\r\n");
                 return;
             }
 
-            // Prevent duplicate conversion
-            if (currentBeatmapData.version.Contains("FLN", StringComparison.OrdinalIgnoreCase))
-            {
-                txtLog.AppendText("This map is already an FLN map.\r\n");
-                return;
-            }
-
-            // File exists check
-            string fullPath = Path.Combine(songsPath, currentBeatmapData.folderName, currentBeatmapData.fileName);
-
-            if (!File.Exists(fullPath))
-            {
-                txtLog.AppendText("Error: Map file not found.\r\n");
-                return;
-            }
-
-            BeatmapParser parser = new BeatmapParser();
             List<TimingPoint> newTimingPoints = new List<TimingPoint>();
-
-            if (BeatmapParser.GetMapGamemode(songsPath, currentBeatmapData.folderName, currentBeatmapData.fileName) != 3)
-            {
-                txtLog.AppendText("Error: Only osu!mania maps are supported.\r\n");
-                return;
-            }
 
             // Begin Conversion process
             try
             {
                 // Extract data from target beatmap
-                var (timingPoints, hitObjects, keyCount) = parser.ExtractData(
+                var (timingPoints, hitObjects, keyCount) = BeatmapParser.ExtractData(
                     songsPath,
-                    currentBeatmapData.folderName,
-                    currentBeatmapData.fileName
+                    currentSnapshot.folderName,
+                    currentSnapshot.fileName
                 );
 
                 // Normalize timing points if SV removal is enabled, otherwise keep original timing points
                 if (removeSV)
                 {
-                    double targetBpm = Converter.GetDominantBpm(timingPoints);
-                    newTimingPoints = Converter.NormalizeTimingPoints(timingPoints, targetBpm);
+                    //var redLines = timingPoints.Where(tp => !tp.isInherited).ToList();
+                    //double targetBpm = Converter.GetDominantBpm(redLines);
+                    newTimingPoints = Converter.NormaliseTimingPoints(timingPoints);
                 }
                 else
                 {
                     newTimingPoints = timingPoints;
                 }
 
-                Converter converter = new Converter();
+                List<HitObject> flnObjects = new List<HitObject>();
 
-                // Create FLN hit objects based on extracted data and user-defined gap
-                var flnObjects = Converter.CreateFLN(hitObjects, gap);
+                if (useSnapMode)
+                {
+                    flnObjects = Converter.CreateSnappedBasedFLN(hitObjects, timingPoints, snapDivisor);
+                }
+                else
+                {
+                    flnObjects = Converter.CreateMsBasedFLN(hitObjects, gap);
+                }
+
 
                 // Write new .osu file with FLN objects and updated timing points
-                string newOsuFile = converter.WriteNewOsuFile(
+                string newOsuFile = BeatmapWriter.WriteNewOsuFile(
                     songsPath,
-                    currentBeatmapData.folderName,
-                    currentBeatmapData.fileName,
+                    currentSnapshot.folderName,
+                    currentSnapshot.fileName,
                     newTimingPoints,
                     flnObjects,
                     keyCount,
                     gap,
                     removeSV,
                     hp,
-                    od
+                    od,
+                    useSnapMode,
+                    snapDivisor
                 );
 
                 txtLog.AppendText("Conversion complete!\r\n");
@@ -565,6 +648,36 @@ namespace CollectorFLN
             {
                 txtLog.AppendText($"Error: {ex.Message}\r\n");
             }
+        }
+
+        public bool MapValidation()
+        {
+            txtLog.AppendText($"Running map validation.\r\n");
+
+            // No map detected 
+            if (string.IsNullOrEmpty(songsPath) || string.IsNullOrEmpty(currentSnapshot.folderName) || string.IsNullOrEmpty(currentSnapshot.fileName))
+            {
+                txtLog.AppendText("Error: No map detected.\r\n");
+                return false;
+            }
+
+            // Prevent duplicate conversion
+            if (currentSnapshot.version.Contains("FLN", StringComparison.OrdinalIgnoreCase))
+            {
+                txtLog.AppendText("Error: This map is already an FLN map.\r\n");
+                return false;
+            }
+
+            // File exists check 
+            if (!File.Exists(Path.Combine(songsPath, currentSnapshot.folderName, currentSnapshot.fileName)))
+            {
+                txtLog.AppendText("Error: Map file not found.\r\n");
+                txtLog.AppendText($"Songs Path: {songsPath}\n, Folder name {currentSnapshot.folderName}\n file name {currentSnapshot.fileName}\r\n");
+                return false;
+            }
+
+            txtLog.AppendText("Map validation passed.\r\n");
+            return true;
         }
     }
 }
