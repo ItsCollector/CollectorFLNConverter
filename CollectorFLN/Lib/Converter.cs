@@ -60,7 +60,13 @@ namespace CollectorFLN
                         (
                             columnIndex,
                             startTime,
-                            startTime
+                            startTime,
+                            currentNote.hitsound,
+                            currentNote.SampleSet,
+                            currentNote.AdditionSet,
+                            currentNote.CustomIndex,
+                            currentNote.Volume,
+                            currentNote.Filename
                         ));
                     }
                     else
@@ -69,7 +75,13 @@ namespace CollectorFLN
                         (
                             columnIndex,
                             startTime,
-                            endTime
+                            endTime,
+                            currentNote.hitsound,
+                            currentNote.SampleSet,
+                            currentNote.AdditionSet,
+                            currentNote.CustomIndex,
+                            currentNote.Volume,
+                            currentNote.Filename
                         ));
                     }
                 }
@@ -168,7 +180,13 @@ namespace CollectorFLN
                         flnHitObjects.Add(new HitObject(
                             columnIndex,
                             startTime,
-                            startTime
+                            startTime,
+                            currentNote.hitsound,
+                            currentNote.SampleSet,
+                            currentNote.AdditionSet,
+                            currentNote.CustomIndex,
+                            currentNote.Volume,
+                            currentNote.Filename
                         ));
                     }
                     else
@@ -176,7 +194,13 @@ namespace CollectorFLN
                         flnHitObjects.Add(new HitObject(
                             columnIndex,
                             startTime,
-                            endTime
+                            endTime,
+                            currentNote.hitsound,
+                            currentNote.SampleSet,
+                            currentNote.AdditionSet,
+                            currentNote.CustomIndex,
+                            currentNote.Volume,
+                            currentNote.Filename
                         ));
                     }
                 }

@@ -32,12 +32,19 @@ namespace CollectorFLN.Lib
                 gapVersionTag = $"{gap}ms";
             }
 
+            
             string titlePart = Path.GetFileNameWithoutExtension(originalFileName);
+            Console.WriteLine($"[DEBUG] Old: {titlePart}_FLN_{gapFileTag}_OD{od}_HP{hp}_NSV.osu");
 
-            if (titlePart.Length > 40)
+
+            int maxTitleLength = 20;
+
+            if (titlePart.Length > maxTitleLength)
             {
-                titlePart = Regex.Match(titlePart, @"\[[^\]]+\]$").Value;
+                titlePart = titlePart.Substring(0, 10) + "_" + titlePart.Substring(titlePart.Length - 9);
             }
+
+            Console.WriteLine($"[DEBUG] New: {titlePart}_FLN_{gapFileTag}_OD{od}_HP{hp}_NSV.osu");
 
             // Create new filename for the FLN .osu file
             if (removeSV)
@@ -188,14 +195,16 @@ namespace CollectorFLN.Lib
             int x = (int)((hitObject.column + 0.5) * 512 / keyCount);
             int y = 192;
 
+            string hitsound = $"{hitObject.SampleSet}:{hitObject.AdditionSet}:{hitObject.CustomIndex}:{hitObject.Volume}:{hitObject.Filename}";
+
             // Rice note
             if (hitObject.startTime == hitObject.endTime)
             {
-                return $"{x},{y},{hitObject.startTime},1,0,0:0:0:0:";
+                return $"{x},{y},{hitObject.startTime},1,{hitObject.hitsound},{hitsound}";
             }
 
             // Long note
-            return $"{x},{y},{hitObject.startTime},128,0,{hitObject.endTime}:0:0:0:0:";
+            return $"{x},{y},{hitObject.startTime},128,{hitObject.hitsound},{hitObject.endTime}:{hitsound}";
         }
     }
 }

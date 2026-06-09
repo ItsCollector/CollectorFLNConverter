@@ -123,22 +123,22 @@ namespace CollectorFLN.Lib
             try
             {
                 var parts = line.Split(',');
+
                 int x = int.Parse(parts[0]);
                 int time = int.Parse(parts[2]);
                 int type = int.Parse(parts[3]);
+                int hitsound = int.Parse(parts[4]);
+                var extras = parts[5].Split(':');
+
+                string sampleSet = extras[0];
+                string additionSet = extras[1];
+                string customIndex = extras[2];
+                string volume = extras[3];
+                string filename = extras.Length > 4 ? extras[4] : "";
+
                 int column = (int)(x * keyCount / 512);
-                int endTime = time;
-                bool isLN = (type & 128) > 0;
 
-                if (isLN)
-                {
-                    Console.WriteLine($"[DEBUG] LN detected, parts[5] = '{parts[5]}'");
-                    var lnParts = parts[5].Split(':');
-                    Console.WriteLine($"[DEBUG] lnParts[0] = '{lnParts[0]}'");
-                    endTime = int.Parse(lnParts[0]);
-                }
-
-                return new HitObject(column, time, endTime);
+                return new HitObject(column, time, type, hitsound, sampleSet, additionSet, customIndex, volume, filename);
             }
             catch (Exception ex)
             {
