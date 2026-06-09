@@ -201,7 +201,7 @@ namespace CollectorFLN
 
             rbMsMode = new RadioButton
             {
-                Text = "ms",
+                Text = "Ms",
                 Location = new Point(175, 42),
                 AutoSize = true,
                 Checked = !config.UseSnapMode,
@@ -213,7 +213,7 @@ namespace CollectorFLN
 
             rbSnapMode = new RadioButton
             {
-                Text = "snap",
+                Text = "Snap",
                 Location = new Point(240, 42),
                 AutoSize = true,
                 Checked = config.UseSnapMode,
