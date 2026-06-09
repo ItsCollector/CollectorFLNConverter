@@ -34,8 +34,6 @@ namespace CollectorFLN.Lib
 
             
             string titlePart = Path.GetFileNameWithoutExtension(originalFileName);
-            Console.WriteLine($"[DEBUG] Old: {titlePart}_FLN_{gapFileTag}_OD{od}_HP{hp}_NSV.osu");
-
 
             int maxTitleLength = 20;
 
@@ -43,8 +41,6 @@ namespace CollectorFLN.Lib
             {
                 titlePart = titlePart.Substring(0, 10) + "_" + titlePart.Substring(titlePart.Length - 9);
             }
-
-            Console.WriteLine($"[DEBUG] New: {titlePart}_FLN_{gapFileTag}_OD{od}_HP{hp}_NSV.osu");
 
             // Create new filename for the FLN .osu file
             if (removeSV)

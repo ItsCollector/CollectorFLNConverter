@@ -57,9 +57,9 @@ namespace CollectorFLN.Lib
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"[FATAL] Timing point parse failed in file: '{fullPath}'");
-                            Console.WriteLine($"[FATAL] Offending line: '{line}'");
-                            Console.WriteLine($"[FATAL] {ex.Message}");
+                            //Console.WriteLine($"[FATAL] Timing point parse failed in file: '{fullPath}'");
+                            //Console.WriteLine($"[FATAL] Offending line: '{line}'");
+                            //Console.WriteLine($"[FATAL] {ex.Message}");
                             throw;
                         }
                         continue;
@@ -88,11 +88,6 @@ namespace CollectorFLN.Lib
         {
             var parts = line.Split(',');
 
-            Console.WriteLine($"[DEBUG] Parsing timing point: '{line}'");
-            Console.WriteLine($"[DEBUG] Part count: {parts.Length}");
-            for (int i = 0; i < parts.Length; i++)
-                Console.WriteLine($"[DEBUG]   parts[{i}] = '{parts[i]}'");
-
             try
             {
                 double offset = double.Parse(parts[0].Trim());
@@ -108,9 +103,9 @@ namespace CollectorFLN.Lib
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Failed to parse timing point.");
-                Console.WriteLine($"[ERROR] Line: '{line}'");
-                Console.WriteLine($"[ERROR] Exception: {ex.Message}");
+                //Console.WriteLine($"[ERROR] Failed to parse timing point.");
+                //Console.WriteLine($"[ERROR] Line: '{line}'");
+                //Console.WriteLine($"[ERROR] Exception: {ex.Message}");
                 throw;
             }
         }
@@ -118,7 +113,7 @@ namespace CollectorFLN.Lib
         // Helper method to parse HitObject lines from .osu files
         public static HitObject ParseHitObject(string line, int keyCount)
         {
-            Console.WriteLine($"[DEBUG] Parsing hit object: '{line}'");
+            //Console.WriteLine($"[DEBUG] Parsing hit object: '{line}'");
 
             try
             {
@@ -142,9 +137,9 @@ namespace CollectorFLN.Lib
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Failed to parse hit object.");
-                Console.WriteLine($"[ERROR] Line: '{line}'");
-                Console.WriteLine($"[ERROR] Exception: {ex.Message}");
+                //Console.WriteLine($"[ERROR] Failed to parse hit object.");
+                //Console.WriteLine($"[ERROR] Line: '{line}'");
+                //Console.WriteLine($"[ERROR] Exception: {ex.Message}");
                 throw;
             }
         }
