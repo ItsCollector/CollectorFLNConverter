@@ -12,6 +12,8 @@ namespace CollectorFLN
         public bool OverrideOD { get; set; } = true;
         public bool OverrideHP { get; set; } = true;
         public bool RemoveSV { get; set; } = true;
+        public bool UseSnapMode { get; set; } = false;
+        public int SnapDivisor { get; set; } = 4;
 
         private static readonly string configFile = "config.json";
 

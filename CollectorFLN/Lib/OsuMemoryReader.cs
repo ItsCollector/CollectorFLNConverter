@@ -22,7 +22,7 @@ namespace CollectorFLN
         }
 
         // Retrieves map data from osu! memory and extracts metadata from the beatmap file
-        public BeatmapData GetMapData(string songsPath)
+        public BeatmapMemorySnapshot? GetMapData(string songsPath)
         {
             var addresses = reader.OsuMemoryAddresses;
 
@@ -35,34 +35,38 @@ namespace CollectorFLN
 
                 if (string.IsNullOrEmpty(folderName) || string.IsNullOrEmpty(fileName))
                 {
-                    return (new BeatmapData());
+                    return null;
                 }
 
-                BeatmapData beatmapData = new BeatmapData();
-                beatmapData = GetMetadata(songsPath, folderName, fileName);
+                BeatmapMemorySnapshot beatmapData = new BeatmapMemorySnapshot();
+                beatmapData = ExtractMetaData(songsPath, folderName, fileName);
 
                 return (beatmapData);
             }
             
-            return (new BeatmapData());
+            return null;
         }
 
         // Metadata extraction from .osu file, returns artist, title, version, OD and HP as strings
-        public BeatmapData GetMetadata(string songsPath, string folderName, string fileName)
+        public BeatmapMemorySnapshot ExtractMetaData(string songsPath, string folderName, string fileName)
         {
             string artist = "";
             string title = "";
             string version = "";
             string od = "";
             string hp = "";
+            string gamemode = "";
 
-            BeatmapData beatmapData = new BeatmapData();
+            BeatmapMemorySnapshot beatmapData = new BeatmapMemorySnapshot();
 
             string fullPath = Path.Combine(songsPath, folderName, fileName);
 
             foreach (string line in File.ReadLines(fullPath))
             {
-                if (line.StartsWith("Artist:"))
+                if (line.StartsWith("Mode:"))
+                    gamemode = line.Split(':')[1].Trim();
+
+                else if (line.StartsWith("Artist:"))
                     artist = line.Split(':')[1].Trim();
 
                 else if (line.StartsWith("Title:"))
@@ -77,7 +81,8 @@ namespace CollectorFLN
                 else if (line.StartsWith("HPDrainRate:"))
                     hp = line.Split(':')[1].Trim();
 
-                if (!string.IsNullOrEmpty(artist) &&
+                if (!string.IsNullOrEmpty(gamemode) &&
+                    !string.IsNullOrEmpty(artist) &&
                     !string.IsNullOrEmpty(title) &&
                     !string.IsNullOrEmpty(version) &&
                     !string.IsNullOrEmpty(od) &&
@@ -87,7 +92,7 @@ namespace CollectorFLN
                 }
             }
 
-            beatmapData.SetBeatmapData(folderName, fileName, artist, title, version, od, hp);
+            beatmapData.SetBeatmapMemorySnapshot(folderName, fileName, gamemode, artist, title, version, od, hp);
 
             return (beatmapData);
         }

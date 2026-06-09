@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
 
 namespace CollectorFLN.Lib
 {
-    public class BeatmapData
+    public class BeatmapMemorySnapshot
     {
         public string folderName = string.Empty;
         public string fileName = string.Empty;
@@ -15,15 +16,17 @@ namespace CollectorFLN.Lib
         public string version = string.Empty;
         public string od = string.Empty;
         public string hp = string.Empty;
+        public string gamemode = string.Empty;
 
-        /* BeatmapData will be an object with empty data initially, 
+        /* BeatmapMemorySnapshot will be an object with empty data initially, 
          * and will be populated with the actual data when the metadata is extracted from the .osu file */
-        public BeatmapData() { }
+        public BeatmapMemorySnapshot() { }
 
-        public void SetBeatmapData(string folderName, string fileName, string artist, string title, string version, string od, string hp)
+        public void SetBeatmapMemorySnapshot(string folderName, string fileName, string gamemode, string artist, string title, string version, string od, string hp)
         {
             this.folderName = folderName;
             this.fileName = fileName;
+            this.gamemode = gamemode;
             this.artist = artist;
             this.title = title;
             this.version = version;
