@@ -14,7 +14,7 @@ A tool for Osu!mania to convert charts to full long note
   
 ## Setup
 - Download the latest release here: https://github.com/ItsCollector/CollectorFLNConverter/releases/tag/v1.2.1
-- Unzip the x86 folder
+- Unzip the folder
 - Launch CollectorFLN.exe, with Osu! open. (recommend creating a shortcut for this application and putting it on your desktop)
 - If your Osu! install is not in the default local user location, click the "Link Osu! Song Folder" button then and select the Osu! songs folder directory
 - If you don't see a "Link Osu! Songs Folder" button then the program has already linked it automatically
@@ -26,11 +26,15 @@ A tool for Osu!mania to convert charts to full long note
 - Works for Windows only
 
 ## To-do List
+- Built-in rate changer 
+- Separation of SV removal and rate changer to create a 3 in 1 mania tool
 - Native linux support
-- Wrong scroll speed because the wrong BPM was found to be the dominant one in some rare case. This map in particular: https://osu.ppy.sh/beatmapsets/2150155#mania/4529853
+- Fix a rounding issue when converting using snap configured LN gap. You likely won't notice the issue in practice unless you open AI mod so it's not a major fault
   
 ## Stars 
 - If my program helped you, leave a star on Github!
 
 ## Special Thanks
-https://github.com/Piotrekol/ProcessMemoryDataFinder - For providing memory processing tools for Osu!
+- Cassio - Due to their long term usage, they have identified broken maps for me to fix edge cases and mistakes in implementation
+- Percyqaz - Helped me identify a fault with converting maps that end with LNs originally
+- https://github.com/Piotrekol/ProcessMemoryDataFinder - For providing memory processing tools for Osu!
