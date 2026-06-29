@@ -35,6 +35,6 @@ A tool for Osu!mania to convert charts to full long note
 - If my program helped you, leave a star on Github!
 
 ## Special Thanks
-Cassio - Due to their long term usage, they have identified broken maps for me to fix edge cases and mistakes in implementation
-Percyqaz - Helped me identify a fault with converting maps that end with LNs originally
-https://github.com/Piotrekol/ProcessMemoryDataFinder - For providing memory processing tools for Osu!
+- Cassio - Due to their long term usage, they have identified broken maps for me to fix edge cases and mistakes in implementation
+- Percyqaz - Helped me identify a fault with converting maps that end with LNs originally
+- https://github.com/Piotrekol/ProcessMemoryDataFinder - For providing memory processing tools for Osu!
