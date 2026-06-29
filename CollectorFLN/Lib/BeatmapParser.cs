@@ -120,33 +120,36 @@ namespace CollectorFLN.Lib
         {
             Console.WriteLine($"[DEBUG] Parsing hit object: '{line}'");
 
-            try
+            var parts = line.Split(',');
+
+            int x = int.Parse(parts[0]);
+            int time = int.Parse(parts[2]);
+            int type = int.Parse(parts[3]);
+            int hitsound = int.Parse(parts[4]);
+
+            int endTime = time; // default for rice
+            string[] extras;
+
+            if (type == 128) // long note
             {
-                var parts = line.Split(',');
-
-                int x = int.Parse(parts[0]);
-                int time = int.Parse(parts[2]);
-                int type = int.Parse(parts[3]);
-                int hitsound = int.Parse(parts[4]);
-                var extras = parts[5].Split(':');
-
-                string sampleSet = extras[0];
-                string additionSet = extras[1];
-                string customIndex = extras[2];
-                string volume = extras[3];
-                string filename = extras.Length > 4 ? extras[4] : "";
-
-                int column = (int)(x * keyCount / 512);
-
-                return new HitObject(column, time, type, hitsound, sampleSet, additionSet, customIndex, volume, filename);
+                var lnParts = parts[5].Split(':');
+                endTime = int.Parse(lnParts[0]);
+                extras = lnParts.Skip(1).ToArray();
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"[ERROR] Failed to parse hit object.");
-                Console.WriteLine($"[ERROR] Line: '{line}'");
-                Console.WriteLine($"[ERROR] Exception: {ex.Message}");
-                throw;
+                extras = parts[5].Split(':');
             }
+
+            string sampleSet = extras[0];
+            string additionSet = extras[1];
+            string customIndex = extras[2];
+            string volume = extras[3];
+            string filename = extras.Length > 4 ? extras[4] : "";
+
+            int column = (int)(x * keyCount / 512);
+
+            return new HitObject(column, time, endTime, hitsound, sampleSet, additionSet, customIndex, volume, filename);
         }
     }
 }

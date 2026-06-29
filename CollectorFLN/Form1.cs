@@ -594,13 +594,13 @@ namespace CollectorFLN
                     currentSnapshot.fileName
                 );
 
-                bool multiBpmFlag = Converter.MultiBpmCheck(timingPoints);
+                bool multiBpmFlag = TimingPointProcessor.MultiBpmCheck(timingPoints);
 
                 if (removeSV && multiBpmFlag == true)  // Normalise timing points if multiple BPMs found
                 {
-                    double targetBpm = Converter.FindTargetBpm(timingPoints);
+                    double targetBpm = TimingPointProcessor.FindTargetBpm(timingPoints);
 
-                    if (Converter.CheckForNormalisation(timingPoints, targetBpm) == true) // Cancel Normalisation if already normalised
+                    if (TimingPointProcessor.CheckForNormalisation(timingPoints, targetBpm) == true) // Cancel Normalisation if already normalised
                     {
                         newTimingPoints = timingPoints;
                         removeSV = false;
@@ -609,13 +609,28 @@ namespace CollectorFLN
                     else
                     {
                         Console.WriteLine("The chart isnt normalised, normalising now...");
-                        newTimingPoints = Converter.NormaliseTimingPoints(timingPoints, targetBpm);
+                        newTimingPoints = TimingPointProcessor.NormaliseTimingPoints(timingPoints, targetBpm);
                     }
                 }
                 else if (removeSV && multiBpmFlag == false) // Cancel Normalisation if only 1 BPM found
                 {
-                    newTimingPoints = timingPoints;
-                    removeSV = false;
+                    double firstRedOffset = timingPoints.First(tp => !tp.isInherited).offset;
+                    var firstRed = timingPoints.First(tp => !tp.isInherited);
+
+                    newTimingPoints = new List<TimingPoint> // strips away any extra green lines and keeps 1 at 1.0x
+                    {
+                        firstRed,
+                        new TimingPoint(
+                            firstRedOffset,
+                            -100,
+                            firstRed.meter,
+                            firstRed.sampleSet,
+                            firstRed.sampleIndex,
+                            firstRed.volume,
+                            true,  // green line
+                            firstRed.effects
+                        )
+                    };
                 }
                 else // NSV is disabled
                 {
