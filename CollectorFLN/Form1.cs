@@ -576,6 +576,7 @@ namespace CollectorFLN
             string modeLabel = useSnapMode ? $"1/{snapDivisor} snap" : $"{gap}ms";
             txtLog.AppendText($"Starting conversion ({modeLabel}) for {currentSnapshot.fileName}.\r\n");
             txtLog.AppendText($"Options - Remove SV: {removeSV}, Override OD: {chkOverrideOD.Checked}, Override HP: {chkOverrideHP.Checked}\r\n");
+            
             if (!MapValidation())
             {
                 return;
@@ -593,15 +594,32 @@ namespace CollectorFLN
                     currentSnapshot.fileName
                 );
 
-                // Normalize timing points if SV removal is enabled, otherwise keep original timing points
-                if (removeSV)
+                bool multiBpmFlag = Converter.MultiBpmCheck(timingPoints);
+
+                if (removeSV && multiBpmFlag == true)  // Normalise timing points if multiple BPMs found
                 {
-                    //var redLines = timingPoints.Where(tp => !tp.isInherited).ToList();
-                    //double targetBpm = Converter.GetDominantBpm(redLines);
-                    newTimingPoints = Converter.NormaliseTimingPoints(timingPoints);
+                    double targetBpm = Converter.FindTargetBpm(timingPoints);
+
+                    if (Converter.CheckForNormalisation(timingPoints, targetBpm) == true) // Cancel Normalisation if already normalised
+                    {
+                        newTimingPoints = timingPoints;
+                        removeSV = false;
+                        Console.WriteLine("YOU ARE HERE"); // i never see this in the console
+                    }
+                    else
+                    {
+                        Console.WriteLine("The chart isnt normalised, normalising now...");
+                        newTimingPoints = Converter.NormaliseTimingPoints(timingPoints, targetBpm);
+                    }
                 }
-                else
+                else if (removeSV && multiBpmFlag == false) // Cancel Normalisation if only 1 BPM found
                 {
+                    newTimingPoints = timingPoints;
+                    removeSV = false;
+                }
+                else // NSV is disabled
+                {
+                    Console.WriteLine("This map has NSV disabled");
                     newTimingPoints = timingPoints;
                 }
 
@@ -615,7 +633,6 @@ namespace CollectorFLN
                 {
                     flnObjects = Converter.CreateMsBasedFLN(hitObjects, gap);
                 }
-
 
                 // Write new .osu file with FLN objects and updated timing points
                 string newOsuFile = BeatmapWriter.WriteNewOsuFile(

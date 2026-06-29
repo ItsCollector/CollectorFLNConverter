@@ -39,11 +39,8 @@ namespace CollectorFLN.Lib
 
             if (titlePart.Length > maxTitleLength)
             {
-                //titlePart = titlePart.Substring(0, 10) + "_" + titlePart.Substring(titlePart.Length - 9);
                 titlePart = titlePart.Substring(titlePart.Length - 30);
             }
-
-            Console.WriteLine($"[DEBUG] New: {titlePart}_FLN_{gapFileTag}_OD{od}_HP{hp}_NSV.osu");
 
             // Create new filename for the FLN .osu file
             if (removeSV)
@@ -54,6 +51,8 @@ namespace CollectorFLN.Lib
             {
                 newFileName = $"{titlePart}_FLN_{gapFileTag}_OD{od}_HP{hp}.osu";
             }
+
+            Console.WriteLine($"[DEBUG] New: {newFileName}");
 
             string newPath = Path.Combine(songsPath, folderName, newFileName);
 
@@ -84,16 +83,7 @@ namespace CollectorFLN.Lib
 
                     continue;
                 }
-                if (line.StartsWith("OverallDifficulty:"))
-                {
-                    outputLines.Add($"OverallDifficulty: {od}");
-                    continue;
-                }
-                if (line.StartsWith("HPDrainRate:"))
-                {
-                    outputLines.Add($"HPDrainRate: {hp}");
-                    continue;
-                }
+
                 if (line.StartsWith("Tags:"))
                 {
                     var parts = line.Substring(5).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -106,6 +96,18 @@ namespace CollectorFLN.Lib
 
                     string newLine = "Tags: " + string.Join(" ", parts);
                     outputLines.Add(newLine);
+                    continue;
+                }
+
+                if (line.StartsWith("HPDrainRate:"))
+                {
+                    outputLines.Add($"HPDrainRate: {hp}");
+                    continue;
+                }
+
+                if (line.StartsWith("OverallDifficulty:"))
+                {
+                    outputLines.Add($"OverallDifficulty: {od}");
                     continue;
                 }
 

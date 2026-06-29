@@ -215,7 +215,7 @@ namespace CollectorFLN
         // Normalizes all timing points so the map scrolls at a constant visual speed.
         // Red lines (uninherited) set BPM. Green lines (inherited) set SV as a negative inverse (-100 / SV).
         // Output: a new list of green lines that cancel BPM changes, with all intentional SVs removed.
-        public static List<TimingPoint> NormaliseTimingPoints(List<TimingPoint> timingPoints, double targetBpm = -1)
+        public static List<TimingPoint> NormaliseTimingPoints(List<TimingPoint> timingPoints, double targetBpm)
         {
             if (timingPoints == null || timingPoints.Count == 0)
             {
@@ -227,11 +227,6 @@ namespace CollectorFLN
             if (redLines.Count == 0)
             {
                 return timingPoints.ToList();
-            }
-
-            if (targetBpm <= 0)
-            {
-                targetBpm = GetDominantBpm(redLines);
             }
 
             var result = new List<TimingPoint>();
@@ -260,13 +255,13 @@ namespace CollectorFLN
 
                 double currentBpm = 60000.0 / currentRed.beatLength;
                 double svMultiplier = targetBpm / currentBpm;
-                double normalizedBeatLength = -100.0 / svMultiplier;
+                double normalisedBeatLength = -100.0 / svMultiplier;
 
                 var original = timingPoints.LastOrDefault(tp => tp.offset == offset);
 
                 result.Add(new TimingPoint(
                     offset,
-                    normalizedBeatLength,
+                    normalisedBeatLength,
                     original?.meter ?? 4,
                     original?.sampleSet ?? 0,
                     original?.sampleIndex ?? 0,
@@ -279,28 +274,79 @@ namespace CollectorFLN
             return result.OrderBy(tp => tp.offset).ThenBy(tp => tp.isInherited ? 1 : 0).ToList();
         }
 
-        /// Returns the BPM that covers the most time in the map.
-        public static double GetDominantBpm(List<TimingPoint> redLines)
+        public static double FindTargetBpm(List<TimingPoint> timingPoints)
         {
-            // Pair each red line with the offset of the next one to measure its duration
-            var durations = new Dictionary<double, double>();
+            double currentBpm = 0;
 
-            for (int i = 0; i < redLines.Count; i++)
+            for (int i = 0; i < timingPoints.Count; i++)
             {
-                double bpm = 60000.0 / redLines[i].beatLength;
-                double start = redLines[i].offset;
-                double end = i + 1 < redLines.Count ? redLines[i + 1].offset : start + 9999999;
-                double span = end - start;
-
-                if (!durations.ContainsKey(bpm))
+                if (!timingPoints[i].isInherited) // record red line BPM
                 {
-                    durations[bpm] = 0;
+                    currentBpm = 60000 / timingPoints[i].beatLength;
                 }
+                else // check if the SV is equal to 1.0x - this marks the target BPM
+                {
+                    double sv = 100 / Math.Abs(timingPoints[i].beatLength);
 
-                durations[bpm] += span;
+                    if (Math.Abs(sv - 1.0) < 0.001)
+                    {
+                        break;
+                    }
+                }
             }
 
-            return durations.OrderByDescending(kv => kv.Value).First().Key;
+            Console.WriteLine($"[DEBUG] Target BPM: {currentBpm}");
+            return currentBpm;
+        }
+
+        public static bool CheckForNormalisation(List<TimingPoint> timingPoints, double targetBpm)
+        {
+            double currentBpm = 0;
+            for (int i = 0; i < timingPoints.Count; ++i)
+            {
+                if (!timingPoints[i].isInherited)
+                {
+                    currentBpm = 60000 / timingPoints[i].beatLength;
+                }
+                else
+                {
+                    double expectedSv = targetBpm / currentBpm;
+                    double actualSv = 100 / Math.Abs(timingPoints[i].beatLength);
+                    Console.WriteLine($"[DEBUG] currentBpm={currentBpm}, expectedSV={expectedSv}, actualSV={actualSv}, diff={Math.Abs(expectedSv - actualSv)}");
+                    
+                    if (Math.Abs(expectedSv - actualSv) > 0.01)
+                    {
+                        Console.WriteLine("[DEBUG] This map is NOT normalised");
+                        return false;
+                    }
+                }
+            }
+            Console.WriteLine("[DEBUG] This map is already normalised");
+            return true;
+        }
+
+        public static bool MultiBpmCheck(List<TimingPoint> timingPoints)
+        {
+            double firstBpm = timingPoints[0].beatLength;
+            bool multiBpmFlag = false;
+
+            for (int i = 1; i < timingPoints.Count; i++)
+            {
+                // check for red line 
+                if (timingPoints[i].isInherited)
+                {
+                    continue;
+                }
+
+                if (firstBpm != timingPoints[i].beatLength)
+                {
+                    multiBpmFlag = true;
+                    break;
+                }
+            }
+
+            Console.WriteLine($"[DEBUG] Multi-BPM flag: {multiBpmFlag}");
+            return multiBpmFlag;
         }
     }
 }
