@@ -604,11 +604,9 @@ namespace CollectorFLN
                     {
                         newTimingPoints = timingPoints;
                         removeSV = false;
-                        Console.WriteLine("YOU ARE HERE"); // i never see this in the console
                     }
                     else
                     {
-                        Console.WriteLine("The chart isnt normalised, normalising now...");
                         newTimingPoints = TimingPointProcessor.NormaliseTimingPoints(timingPoints, targetBpm);
                     }
                 }
