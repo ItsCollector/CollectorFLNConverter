@@ -1,7 +1,6 @@
 ﻿using CollectorFLN.Lib;
 using CollectorFLN.UI;
 using System.Diagnostics;
-using System.Drawing;
 using static CollectorFLN.UI.InterfaceBuilder;
 using static CollectorFLN.UI.Theme;
 
@@ -32,7 +31,7 @@ namespace CollectorFLN
         private ComboBox cmbSnapDivisor = null!;
         private Label lblGapLabel = null!;
 
-        // Rate change panel (always visible, disabled when toggle off) 
+        // Rate change panel 
         private Label rateChangeHeader = null!;
         private TextBox txtBPM = null!;
         private TextBox txtRate = null!;

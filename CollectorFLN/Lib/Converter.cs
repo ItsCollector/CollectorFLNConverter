@@ -1,6 +1,4 @@
-﻿using System.IO.Compression;
-
-namespace CollectorFLN
+﻿namespace CollectorFLN
 {
     public static class Converter
     {
