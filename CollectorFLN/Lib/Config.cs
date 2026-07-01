@@ -11,9 +11,17 @@ namespace CollectorFLN
         public int Gap { get; set; } = 80;
         public bool OverrideOD { get; set; } = true;
         public bool OverrideHP { get; set; } = true;
-        public bool RemoveSV { get; set; } = true;
+        public bool EnableFLN { get; set; } = true;
+        public bool EnableRateChange { get; set; } = true;
+        public bool EnableRemoveSV { get; set; } = true;
+        public bool EnableRemoveLN { get; set; } = true;
         public bool UseSnapMode { get; set; } = false;
         public int SnapDivisor { get; set; } = 4;
+
+        public bool ChangePitchUprate { get; set; } = false;
+        public bool ChangePitchDownrate { get; set; } = false;
+
+        public bool ShowLog { get; set; } = false;
 
         private static readonly string configFile = "config.json";
 
@@ -60,6 +68,24 @@ namespace CollectorFLN
             {
                 Console.WriteLine($"Failed to save config: {ex.Message}");
             }
+        }
+
+        public void ResetToDefaults()
+        {
+            OD = 0;
+            HP = 6;
+            Gap = 80;
+            OverrideOD = true;
+            OverrideHP = true;
+            EnableFLN = false;
+            EnableRateChange = false;
+            EnableRemoveSV = false;
+            EnableRemoveLN = false;
+            UseSnapMode = false;
+            SnapDivisor = 4;
+            ChangePitchUprate = false;
+            ChangePitchDownrate = false;
+            ShowLog = false;
         }
 
         // Fetches the osu! Songs directory path and executable path from the user's local application data

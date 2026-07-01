@@ -14,7 +14,7 @@ namespace CollectorFLN
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
-            //AllocConsole(); // Uncomment this line if you want to see console output for debugging
+            AllocConsole(); // Uncomment this line if you want to see console output for debugging
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
