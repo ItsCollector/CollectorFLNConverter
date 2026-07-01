@@ -1,4 +1,11 @@
-# Collector FLN Converter
+# Many parts are / were rewrittem because a modular design is required for the updates I want to make
+These were never intended from the start so the underlying foundations weren't built with these new ideas in mind.
+
+**Not final interface design, subject to change, the extended view is collapsable if preferred, to look similar to the original**
+
+<img width="959" height="791" alt="image" src="https://github.com/user-attachments/assets/11d7a0de-a6fb-4308-b223-aa7aee62afc5" />
+
+# Collector FLN Converter (Old README.md)
 A tool for Osu!mania to convert charts to full long note
 
 <img width="459" height="644" alt="image" src="https://github.com/user-attachments/assets/cca8218a-4067-4329-bdb1-77d2c6cc27d7" />
