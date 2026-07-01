@@ -1,4 +1,6 @@
-﻿namespace CollectorFLN.Lib
+﻿using CollectorFLN.Logging;
+
+namespace CollectorFLN.Lib
 {
     internal static class BeatmapParser
     {
@@ -10,7 +12,7 @@
 
             bool inTimingPoints = false;
             bool inHitObjects = false;
-            int keyCount = 4;
+            int? keyCount = null;
 
             // Set full string path to the beatmap
             string fullPath = Path.Combine(songsPath, folderName, fileName);
@@ -44,48 +46,49 @@
                     }
                     else
                     {
-                        try
-                        {
-                            TimingPoint timingPoint = ParseTimingPoint(line);
-                            timingPoints.Add(timingPoint);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"[FATAL] Timing point parse failed in file: '{fullPath}'");
-                            Console.WriteLine($"[FATAL] Offending line: '{line}'");
-                            Console.WriteLine($"[FATAL] {ex.Message}");
-                            throw;
-                        }
+                        TimingPoint timingPoint = ParseTimingPoint(line);
+                        timingPoints.Add(timingPoint);
+
                         continue;
                     }
                 }
 
                 if (inHitObjects)
                 {
+                    if (keyCount == null)
+                    {
+                        throw new BeatmapFormatException("Conversion Failed: CircleSize (key count) not found in the .osu file.");
+                    }
+
+                    if (timingPoints.Count == 0)
+                    {
+                        throw new BeatmapFormatException("Conversion Failed: No timing points found in the .osu file.");
+                    }
+
                     if (string.IsNullOrWhiteSpace(line) || line.StartsWith("["))
                     {
                         inHitObjects = false;
                     }
                     else
                     {
-                        hitObjects.Add(ParseHitObject(line, keyCount));
+                        hitObjects.Add(ParseHitObject(line, keyCount.Value));
                         continue;
                     }
                 }
             }
 
-            return (timingPoints, hitObjects, keyCount);
+            if (hitObjects.Count == 0)
+            {
+                throw new BeatmapFormatException("Conversion Failed: No hit objects found in the .osu file.");
+            }
+
+            return (timingPoints, hitObjects, keyCount!.Value);
         }
 
         // Helper method to parse TimingPoint lines from .osu files
         public static TimingPoint ParseTimingPoint(string line)
         {
             var parts = line.Split(',');
-
-            Console.WriteLine($"[DEBUG] Parsing timing point: '{line}'");
-            Console.WriteLine($"[DEBUG] Part count: {parts.Length}");
-            for (int i = 0; i < parts.Length; i++)
-                Console.WriteLine($"[DEBUG]   parts[{i}] = '{parts[i]}'");
 
             try
             {
@@ -105,7 +108,7 @@
                 Console.WriteLine($"[ERROR] Failed to parse timing point.");
                 Console.WriteLine($"[ERROR] Line: '{line}'");
                 Console.WriteLine($"[ERROR] Exception: {ex.Message}");
-                throw;
+                throw new BeatmapFormatException($"Conversion Failed: Invalid timing point format. \r\n Line: {line}");
             }
         }
 
@@ -116,34 +119,44 @@
 
             var parts = line.Split(',');
 
-            int x = int.Parse(parts[0]);
-            int time = int.Parse(parts[2]);
-            int type = int.Parse(parts[3]);
-            int hitsound = int.Parse(parts[4]);
-
-            int endTime = time; // default for rice
-            string[] extras;
-
-            if (type == 128) // long note
+            try
             {
-                var lnParts = parts[5].Split(':');
-                endTime = int.Parse(lnParts[0]);
-                extras = lnParts.Skip(1).ToArray();
+                int x = int.Parse(parts[0]);
+                int time = int.Parse(parts[2]);
+                int type = int.Parse(parts[3]);
+                int hitsound = int.Parse(parts[4]);
+
+                int endTime = time; // default for rice
+                string[] extras;
+
+                if (type == 128) // long note
+                {
+                    var lnParts = parts[5].Split(':');
+                    endTime = int.Parse(lnParts[0]);
+                    extras = lnParts.Skip(1).ToArray();
+                }
+                else
+                {
+                    extras = parts[5].Split(':');
+                }
+
+                string sampleSet = extras[0];
+                string additionSet = extras[1];
+                string customIndex = extras[2];
+                string volume = extras[3];
+                string filename = extras.Length > 4 ? extras[4] : "";
+
+                int column = (int)(x * keyCount / 512);
+
+                return new HitObject(column, time, endTime, hitsound, sampleSet, additionSet, customIndex, volume, filename);
             }
-            else
+            catch (Exception ex)
             {
-                extras = parts[5].Split(':');
+                Console.WriteLine($"[ERROR] Failed to parse hit object.");
+                Console.WriteLine($"[ERROR] Line: '{line}'");
+                Console.WriteLine($"[ERROR] Exception: {ex.Message}");
+                throw new BeatmapFormatException($"Conversion Failed: Invalid hit object format. \r\n Line: {line}");
             }
-
-            string sampleSet = extras[0];
-            string additionSet = extras[1];
-            string customIndex = extras[2];
-            string volume = extras[3];
-            string filename = extras.Length > 4 ? extras[4] : "";
-
-            int column = (int)(x * keyCount / 512);
-
-            return new HitObject(column, time, endTime, hitsound, sampleSet, additionSet, customIndex, volume, filename);
         }
     }
 }

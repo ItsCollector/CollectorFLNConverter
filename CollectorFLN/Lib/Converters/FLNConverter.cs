@@ -1,6 +1,6 @@
-﻿namespace CollectorFLN
+﻿namespace CollectorFLN.Lib.Converters
 {
-    public static class Converter
+    public static class FLNConverter
     {
         // Converts the original hit objects into FLN format, using the specified gap to determine LN lengths
         public static List<HitObject> CreateMsBasedFLN(List<HitObject> originalHitObjects, int gap)

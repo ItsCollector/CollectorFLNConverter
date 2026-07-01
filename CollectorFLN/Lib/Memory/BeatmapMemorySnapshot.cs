@@ -1,4 +1,4 @@
-﻿namespace CollectorFLN.Lib
+﻿namespace CollectorFLN.Lib.Memory
 {
     public class BeatmapMemorySnapshot
     {

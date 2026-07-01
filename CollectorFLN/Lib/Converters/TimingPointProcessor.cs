@@ -1,4 +1,4 @@
-﻿namespace CollectorFLN.Lib
+﻿namespace CollectorFLN.Lib.Converters
 {
     public static class TimingPointProcessor
     {

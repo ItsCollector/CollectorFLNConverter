@@ -1,4 +1,6 @@
 ﻿using CollectorFLN.Lib;
+using CollectorFLN.Lib.Converters;
+using CollectorFLN.Lib.Memory;
 using CollectorFLN.UI;
 using System.Diagnostics;
 using static CollectorFLN.UI.InterfaceBuilder;
@@ -62,7 +64,7 @@ namespace CollectorFLN
             this.Text = "Collector's FLN Converter";
             this.Icon = new Icon("Assets/icon.ico");
             this.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
-            this.ClientSize = new Size(480, 780);
+            this.ClientSize = new Size(496, 780);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = bg;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -407,12 +409,12 @@ namespace CollectorFLN
 
             if (config.ShowLog)
             {
-                this.Size = new Size(960, 780);
+                this.Size = new Size(956, 780);
                 cardLog.Visible = true;
             }
             else
             {
-                this.Size = new Size(500, 780);
+                this.Size = new Size(496, 780);
                 cardLog.Visible = false;
             }
 
@@ -572,7 +574,7 @@ namespace CollectorFLN
             try
             {
                 // Extract data from target beatmap
-                var (timingPoints, hitObjects, keyCount) = BeatmapParser.ExtractData(
+                var (timingPoints, hitObjects, keyCount) = BeatmapParser.ExtractData( // added try catch behaviour to internal BeatmapParser.ExtractData to handle exceptions 
                     songsPath,
                     currentSnapshot.folderName,
                     currentSnapshot.fileName
@@ -624,11 +626,11 @@ namespace CollectorFLN
 
                 if (useSnapMode)
                 {
-                    flnObjects = Converter.CreateSnappedBasedFLN(hitObjects, timingPoints, snapDivisor);
+                    flnObjects = FLNConverter.CreateSnappedBasedFLN(hitObjects, timingPoints, snapDivisor);
                 }
                 else
                 {
-                    flnObjects = Converter.CreateMsBasedFLN(hitObjects, gap);
+                    flnObjects = FLNConverter.CreateMsBasedFLN(hitObjects, gap);
                 }
 
                 // Write new .osu file with FLN objects and updated timing points
@@ -660,7 +662,7 @@ namespace CollectorFLN
             }
             catch (Exception ex)
             {
-                Log($"Error: {ex.Message}");
+                Log($"{ex.Message}");
             }
         }
 
@@ -671,14 +673,15 @@ namespace CollectorFLN
             // No map detected 
             if (string.IsNullOrEmpty(songsPath) || string.IsNullOrEmpty(currentSnapshot.folderName) || string.IsNullOrEmpty(currentSnapshot.fileName))
             {
-                Log("Error: No map detected.");
+                Log("Conversion Failed: No map detected.");
                 return false;
             }
 
             // Prevent duplicate conversion
             if (currentSnapshot.version.Contains("FLN", StringComparison.OrdinalIgnoreCase))
             {
-                Log("Error: This map is already an FLN map.");
+                Log("Conversion Failed: This map is already an FLN map.");
+                Log("If this is a mistake, remove \"FLN\" from the map's difficuty name and try again");
                 return false;
             }
 

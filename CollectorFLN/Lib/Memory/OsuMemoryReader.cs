@@ -1,7 +1,6 @@
-﻿using CollectorFLN.Lib;
-using OsuMemoryDataProvider;
+﻿using OsuMemoryDataProvider;
 
-namespace CollectorFLN
+namespace CollectorFLN.Lib.Memory
 {
     /**
      *   Uses StructuredOsuMemoryReader to read the beatmap data from osu! memory and extract the beatmap ID and file name.
@@ -41,7 +40,7 @@ namespace CollectorFLN
                 BeatmapMemorySnapshot beatmapData = new BeatmapMemorySnapshot();
                 beatmapData = ExtractMetaData(songsPath, folderName, fileName);
 
-                return (beatmapData);
+                return beatmapData;
             }
             
             return null;
@@ -94,7 +93,7 @@ namespace CollectorFLN
 
             beatmapData.SetBeatmapMemorySnapshot(folderName, fileName, gamemode, artist, title, version, od, hp);
 
-            return (beatmapData);
+            return beatmapData;
         }
     }
 }
