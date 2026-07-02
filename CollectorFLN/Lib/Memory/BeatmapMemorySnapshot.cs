@@ -9,13 +9,14 @@
         public string version = string.Empty;
         public string od = string.Empty;
         public string hp = string.Empty;
+        public double bpm = 0.0;
         public string gamemode = string.Empty;
 
         /* BeatmapMemorySnapshot will be an object with empty data initially, 
          * and will be populated with the actual data when the metadata is extracted from the .osu file */
         public BeatmapMemorySnapshot() { }
 
-        public void SetBeatmapMemorySnapshot(string folderName, string fileName, string gamemode, string artist, string title, string version, string od, string hp)
+        public void SetBeatmapMemorySnapshot(string folderName, string fileName, string gamemode, string artist, string title, string version, string od, string hp, double bpm)
         {
             this.folderName = folderName;
             this.fileName = fileName;
@@ -25,6 +26,7 @@
             this.version = version;
             this.od = od;
             this.hp = hp;
+            this.bpm = bpm;
         }
     }
 }

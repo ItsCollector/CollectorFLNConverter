@@ -80,6 +80,8 @@ namespace CollectorFLN.Lib.Memory
                 else if (line.StartsWith("HPDrainRate:"))
                     hp = line.Split(':')[1].Trim();
 
+                // find BPM 
+
                 if (!string.IsNullOrEmpty(gamemode) &&
                     !string.IsNullOrEmpty(artist) &&
                     !string.IsNullOrEmpty(title) &&
@@ -91,7 +93,7 @@ namespace CollectorFLN.Lib.Memory
                 }
             }
 
-            beatmapData.SetBeatmapMemorySnapshot(folderName, fileName, gamemode, artist, title, version, od, hp);
+            beatmapData.SetBeatmapMemorySnapshot(folderName, fileName, gamemode, artist, title, version, od, hp, 200);
 
             return beatmapData;
         }

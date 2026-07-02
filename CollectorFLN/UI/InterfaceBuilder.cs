@@ -32,7 +32,7 @@ namespace CollectorFLN.UI
             };
         }
 
-        // Helper to build styled card
+        // Helper to build styled panel
         public static Panel MakeCard(Point loc, Size size, Color? fill = null)
         {
             var p = new Panel
@@ -57,8 +57,8 @@ namespace CollectorFLN.UI
                 Text = text,
                 Location = loc,
                 Size = sz,
-                BackColor = Color.FromArgb(38, 38, 52),
                 ForeColor = textPrim,
+                BackColor = Color.FromArgb(38, 38, 52),
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 10f),
                 TextAlign = HorizontalAlignment.Center
@@ -73,8 +73,8 @@ namespace CollectorFLN.UI
                 Text = string.Empty,
                 Location = loc,
                 Size = sz,
-                BackColor = Color.FromArgb(38, 38, 52),
                 ForeColor = textPrim,
+                BackColor = Color.FromArgb(38, 38, 52),
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 10f),
                 TextAlign = HorizontalAlignment.Center
@@ -82,13 +82,15 @@ namespace CollectorFLN.UI
         }
 
         // Helper to build styled module toggle checkbox
-        public static CheckBox MakeModuleToggle(string text, Point loc)
+        public static CheckBox MakeModuleToggle(string text, Point loc, bool isChecked)
         {
             return new CheckBox
             {
                 Text = text,
                 Location = loc,
+                Checked = isChecked,
                 AutoSize = true,
+                ForeColor = isChecked ? accent : textMuted,
                 BackColor = Color.Transparent,
                 Font = new Font("Segoe UI Semibold", 9f, FontStyle.Bold),
                 Cursor = Cursors.Hand
