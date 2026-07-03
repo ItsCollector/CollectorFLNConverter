@@ -17,7 +17,10 @@ namespace CollectorFLN.UI.Elements
         private readonly CheckBox chkOverrideHP;
         private readonly ToolTip tt = new() { InitialDelay = 300, ReshowDelay = 100 };
 
-        public event EventHandler<DifficultyOverrideEventArgs>? OverrideChanged;
+        public event EventHandler<bool>? OverrideODChanged;
+        public event EventHandler<bool>? OverrideHPChanged;
+        public event EventHandler<float>? ODTxtChanged;
+        public event EventHandler<float>? HPTxtChanged;
 
         public AppDifficultyOverrideCard(DifficultyOverrideConfig config)
         {
@@ -75,32 +78,32 @@ namespace CollectorFLN.UI.Elements
 
         private void WireEvents()
         {
-            chkOverrideOD.CheckedChanged += (s, e) =>
+            chkOverrideOD.CheckedChanged += (s, e) => // checked / unchecked OD override
             {
                 txtOD.Enabled = chkOverrideOD.Checked;
                 chkOverrideOD.ForeColor = chkOverrideOD.Checked ? accent : textMuted;
-                RaiseChanged();
+                OverrideODChanged?.Invoke(this, chkOverrideOD.Checked);
             };
 
-            chkOverrideHP.CheckedChanged += (s, e) =>
+            chkOverrideHP.CheckedChanged += (s, e) => // checked / unchecked HP override
             {
                 txtHP.Enabled = chkOverrideHP.Checked;
                 chkOverrideHP.ForeColor = chkOverrideHP.Checked ? accent : textMuted;
-                RaiseChanged();
+                OverrideHPChanged?.Invoke(this, chkOverrideHP.Checked);
             };
 
-            txtOD.TextChanged += (s, e) => RaiseChanged();
-            txtHP.TextChanged += (s, e) => RaiseChanged();
-        }
+            txtOD.TextChanged += (s, e) => // override = true + OD is typed in afterwards
+            {
+                float.TryParse(txtOD.Text, out float od);
 
-        private void RaiseChanged()
-        {
-            float.TryParse(txtOD.Text, out float od);
-            float.TryParse(txtHP.Text, out float hp);
+                ODTxtChanged?.Invoke(this, od);
+            };
 
-            OverrideChanged?.Invoke(this, new DifficultyOverrideEventArgs(
-                chkOverrideOD.Checked, od,
-                chkOverrideHP.Checked, hp));
+            txtHP.TextChanged += (s, e) => // override = true + HP is typed in afterwards
+            {
+                float.TryParse(txtHP.Text, out float hp);
+                HPTxtChanged?.Invoke(this, hp);
+            };
         }
 
         public void SetDifficultyOverrideSettings(bool overrideOD, float od, bool overrideHP, float hp)

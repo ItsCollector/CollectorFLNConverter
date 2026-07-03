@@ -174,12 +174,37 @@ namespace CollectorFLN
             difficultyOverrideCard = new AppDifficultyOverrideCard(new DifficultyOverrideConfig(config.OverrideOD, config.OD, config.OverrideHP, config.HP));
             Controls.Add(difficultyOverrideCard.difficultyOverrideCard);
 
-            difficultyOverrideCard.OverrideChanged += (s, e) =>
+            difficultyOverrideCard.OverrideODChanged += (s, isEnabled) =>
             {
-                config.OverrideOD = e.OverrideOD;
-                config.OverrideHP = e.OverrideHP;
-                config.OD = e.OD;
-                config.HP = e.HP;
+                if (!isEnabled)
+                {
+                    difficultyOverrideCard.SetOD(float.Parse(currentSnapshot.od));
+                }
+
+                config.OverrideOD = isEnabled;
+                config.Save();
+            };
+
+            difficultyOverrideCard.OverrideHPChanged += (s, isEnabled) =>
+            {
+                if (!isEnabled)
+                {
+                    difficultyOverrideCard.SetHP(float.Parse(currentSnapshot.hp));
+                }
+
+                config.OverrideHP = isEnabled;
+                config.Save();
+            };
+
+            difficultyOverrideCard.ODTxtChanged += (s, odValue) =>
+            {
+                config.OD = odValue;
+                config.Save();
+            };
+
+            difficultyOverrideCard.HPTxtChanged += (s, hpValue) =>
+            {
+                config.HP = hpValue;
                 config.Save();
             };
 
@@ -210,6 +235,16 @@ namespace CollectorFLN
                 btnLinkOsu.Visible = false;
                 btnConvert.Visible = true;
             }
+        }
+
+        private void DifficultyOverrideCard_HPTxtChanged(object? sender, float e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void DifficultyOverrideCard_OverrideODChanged(object? sender, bool e)
+        {
+            throw new NotImplementedException();
         }
 
         private void BtnConvert_Click(object? sender, EventArgs e)
@@ -284,7 +319,7 @@ namespace CollectorFLN
                     currentSnapshot.bpm
                 );
 
-                if (config.OverrideOD)
+                if (!config.OverrideOD)
                 {
                     difficultyOverrideCard.SetOD(float.Parse(currentSnapshot.od));
                 }
