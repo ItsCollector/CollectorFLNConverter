@@ -5,7 +5,7 @@ namespace CollectorFLN.UI.Elements
 {
     public class AppLogCard
     {
-        private static readonly Point logPanelPosition = new(480, 36);
+        private static readonly Point logPanelPosition = new(480, 42);
         private static readonly Size logPanelSize = new(440, 662);
 
         public Panel logCard { get; }

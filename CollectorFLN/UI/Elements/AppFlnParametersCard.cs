@@ -6,7 +6,7 @@ namespace CollectorFLN.UI.Elements
 {
     public class AppFlnParametersCard
     {
-        private static readonly Point cardPosition = new(20, 264);
+        private static readonly Point cardPosition = new(20, 272);
         private static readonly Size cardSize = new(440, 120);
         private static readonly string[] snapOptions = { "1/2", "1/3", "1/4", "1/6", "1/8", "1/12", "1/16" };
 

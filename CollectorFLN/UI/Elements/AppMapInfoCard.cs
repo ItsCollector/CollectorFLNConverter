@@ -5,7 +5,7 @@ namespace CollectorFLN.UI.Elements
 {
     public class AppMapInfoCard
     {
-        private static readonly Point cardPosition = new(20, 36);
+        private static readonly Point cardPosition = new(20, 42);
         private static readonly Size cardSize = new(440, 88);
 
         public Panel mapInfoCard { get; }

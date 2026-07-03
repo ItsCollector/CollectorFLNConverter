@@ -5,7 +5,7 @@ namespace CollectorFLN.UI.Elements
 {
     public class AppRateChangeCard
     {
-        private static readonly Point cardPosition = new(20, 394);
+        private static readonly Point cardPosition = new(20, 402);
         private static readonly Size cardSize = new(440, 120);
 
         public Panel rateChangeCard { get; }

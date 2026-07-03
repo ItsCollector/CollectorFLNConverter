@@ -38,7 +38,7 @@ namespace CollectorFLN
             this.Text = "Collector's FLN Converter";
             this.Icon = new Icon("Assets/icon.ico");
             this.Font = new Font("Segoe UI", 9f, FontStyle.Regular);
-            this.ClientSize = new Size(496, 780);
+            this.ClientSize = new Size(480, 780);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = bg;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -48,8 +48,9 @@ namespace CollectorFLN
 
             SetupControls();
 
-            osuMemoryReader = new OsuMemoryReader();
+            SetClientSize(config.ShowLog);
 
+            osuMemoryReader = new OsuMemoryReader();
             memoryTimer = new System.Windows.Forms.Timer();
             memoryTimer.Interval = 500;
             memoryTimer.Tick += MemoryTimer_Tick;
@@ -71,6 +72,7 @@ namespace CollectorFLN
             toolbar.LogVisibilityChanged += (s, visible) =>
             {
                 logCard.logCard.Visible = visible;
+                SetClientSize(visible);
             };
 
             toolbar.PitchUprateChanged += (s, val) =>
@@ -182,7 +184,7 @@ namespace CollectorFLN
             };
 
             // SECTION 6 — Convert / Link Buttons
-            btnConvert = new Button { Text = "CONVERT", Size = new Size(440, 44), Location = new Point(20, 654), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(18, 18, 24), Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnConvert = new Button { Text = "CONVERT", Size = new Size(440, 44), Location = new Point(20, 662), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(18, 18, 24), Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold), Cursor = Cursors.Hand };
             btnConvert.FlatAppearance.BorderSize = 0;
             btnConvert.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 130, 190);
             btnConvert.FlatAppearance.MouseDownBackColor = Color.FromArgb(220, 80, 150);
@@ -208,11 +210,6 @@ namespace CollectorFLN
                 btnLinkOsu.Visible = false;
                 btnConvert.Visible = true;
             }
-        }
-
-        public void Log(string message)
-        {
-            logCard.AppendLine(message + "\r\n");
         }
 
         private void BtnConvert_Click(object? sender, EventArgs e)
@@ -298,6 +295,18 @@ namespace CollectorFLN
                 }
 
                 // TODO: populate lblOriginalBPM.Text from snapshot once BPM data is available
+            }
+        }
+
+        public void SetClientSize(bool logOpen)
+        {
+            if (logOpen)
+            {
+                this.ClientSize = new Size(940, 726);
+            }
+            else
+            {
+                this.ClientSize = new Size(480, 726);
             }
         }
 
@@ -440,6 +449,11 @@ namespace CollectorFLN
 
             Log("Map validation passed.");
             return true;
+        }
+
+        public void Log(string message)
+        {
+            logCard.AppendLine(message + "\r\n");
         }
     }
 }

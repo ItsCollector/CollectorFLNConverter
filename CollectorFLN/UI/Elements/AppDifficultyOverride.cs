@@ -6,7 +6,7 @@ namespace CollectorFLN.UI.Elements
 {
     public class AppDifficultyOverrideCard
     {
-        private static readonly Point cardPosition = new(20, 524);
+        private static readonly Point cardPosition = new(20, 532);
         private static readonly Size cardSize = new(440, 120);
 
         public Panel difficultyOverrideCard { get; }
