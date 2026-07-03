@@ -96,12 +96,36 @@ namespace CollectorFLN.UI.Elements
             {
                 float.TryParse(txtOD.Text, out float od);
 
+                if (od < 0)
+                {
+                    od = 0;
+                    SetOD(od);
+                }
+
+                else if (od > 10)
+                {
+                    od = 10;
+                    SetOD(od);
+                }
+
                 ODTxtChanged?.Invoke(this, od);
             };
 
             txtHP.TextChanged += (s, e) => // override = true + HP is typed in afterwards
             {
                 float.TryParse(txtHP.Text, out float hp);
+
+                if (hp < 0)
+                {
+                    hp = 0;
+                    SetHP(hp);
+                }
+                else if (hp > 10)
+                {
+                    hp = 10;
+                    SetHP(hp);
+                }
+
                 HPTxtChanged?.Invoke(this, hp);
             };
         }
