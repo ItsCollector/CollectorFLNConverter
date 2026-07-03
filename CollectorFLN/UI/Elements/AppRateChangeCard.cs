@@ -77,6 +77,12 @@ namespace CollectorFLN.UI.Elements
                 RateChanged?.Invoke(this, rate);
             };
         }
+
+        public void ToggleModule(bool isEnabled)
+        {
+            txtBPM.Enabled = isEnabled;
+            txtRate.Enabled = isEnabled;
+        }
     }
 
     public record RateChangeConfig(double OriginalBpm, double Rate);

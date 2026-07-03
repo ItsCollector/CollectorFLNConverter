@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using static CollectorFLN.UI.InterfaceBuilder;
+﻿using static CollectorFLN.UI.InterfaceBuilder;
 using static CollectorFLN.UI.Theme;
 
 namespace CollectorFLN.UI.Elements

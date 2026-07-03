@@ -1,13 +1,9 @@
 ﻿using CollectorFLN.Lib;
 using CollectorFLN.Lib.Converters;
 using CollectorFLN.Lib.Memory;
-using CollectorFLN.UI;
 using CollectorFLN.UI.Elements;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using static CollectorFLN.UI.InterfaceBuilder;
 using static CollectorFLN.UI.Theme;
-using static System.ComponentModel.Design.ObjectSelectorEditor;
 
 namespace CollectorFLN
 {
@@ -106,12 +102,6 @@ namespace CollectorFLN
             var moduleCard = new AppModuleToggleCard(new ModuleToggleConfig(config.EnableFLN, config.EnableRemoveLN, config.EnableRemoveSV, config.EnableRateChange));
             Controls.Add(moduleCard.moduleCard);
 
-            moduleCard.ChkEnableFLNChanged += (s, isEnabled) =>
-            {
-                config.EnableFLN = isEnabled;
-                config.Save();
-            };
-
             moduleCard.ChkEnableRemoveLNChanged += (s, isEnabled) =>
             {
                 config.EnableRemoveLN = isEnabled;
@@ -124,15 +114,10 @@ namespace CollectorFLN
                 config.Save();
             };
 
-            moduleCard.ChkEnableRateChangeChanged += (s, isEnabled) =>
-            {
-                config.EnableRateChange = isEnabled;
-                config.Save();
-            };
-
             // SECTION 3 — FLN Parameters Card 
             var flnCard = new AppFlnParametersCard(config);
             Controls.Add(flnCard.flnParametersCard);
+            flnCard.ToggleModule(config.EnableFLN);
 
             flnCard.GapModeChanged += (s, isSnap) =>
             {
@@ -160,14 +145,30 @@ namespace CollectorFLN
                 }
             };
 
+            moduleCard.ChkEnableFLNChanged += (s, isEnabled) =>
+            {
+                flnCard.ToggleModule(isEnabled);
+
+                config.EnableFLN = isEnabled;
+                config.Save();
+            };
+
             // SECTION 4 — Rate Change Card
             var rateChangeCard = new AppRateChangeCard(new RateChangeConfig(200, 1.00));
             Controls.Add(rateChangeCard.rateChangeCard);
+            rateChangeCard.ToggleModule(config.EnableRateChange);
 
             rateChangeCard.RateChanged += (s, rate) =>
             {
                 currentRate = rate; 
                 logCard.AppendLine($"Rate set to {rate:0.00}x");
+            };
+
+            moduleCard.ChkEnableRateChangeChanged += (s, isEnabled) =>
+            {
+                rateChangeCard.ToggleModule(isEnabled);
+                config.EnableRateChange = isEnabled;
+                config.Save();
             };
 
             // SECTION 5 — OD / HP Override 
@@ -235,16 +236,6 @@ namespace CollectorFLN
                 btnLinkOsu.Visible = false;
                 btnConvert.Visible = true;
             }
-        }
-
-        private void DifficultyOverrideCard_HPTxtChanged(object? sender, float e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void DifficultyOverrideCard_OverrideODChanged(object? sender, bool e)
-        {
-            throw new NotImplementedException();
         }
 
         private void BtnConvert_Click(object? sender, EventArgs e)

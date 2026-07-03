@@ -19,9 +19,9 @@ namespace CollectorFLN.UI.Elements
         private readonly ComboBox cmbSnapDivisor;
         private readonly ToolTip tt = new() { InitialDelay = 300, ReshowDelay = 100 };
 
-        public event EventHandler<bool>? GapModeChanged;      
-        public event EventHandler<string>? GapMsChanged;   
-        public event EventHandler<string>? GapSnapChanged; 
+        public event EventHandler<bool>? GapModeChanged;
+        public event EventHandler<string>? GapMsChanged;
+        public event EventHandler<string>? GapSnapChanged;
 
         public AppFlnParametersCard(Config config)
         {
@@ -93,10 +93,12 @@ namespace CollectorFLN.UI.Elements
         {
             rbMsMode.CheckedChanged += (s, e) =>
             {
-                if (!rbMsMode.Checked) return; 
+                if (!rbMsMode.Checked) return;
 
                 txtGap.Visible = true;
                 cmbSnapDivisor.Visible = false;
+                rbMsMode.Enabled = true;
+                txtGap.Enabled = true;
                 rbMsMode.ForeColor = accent;
                 rbSnapMode.ForeColor = textMuted;
                 GapModeChanged?.Invoke(this, false);
@@ -108,6 +110,8 @@ namespace CollectorFLN.UI.Elements
 
                 txtGap.Visible = false;
                 cmbSnapDivisor.Visible = true;
+                rbSnapMode.Enabled = true;
+                cmbSnapDivisor.Enabled = true;
                 rbSnapMode.ForeColor = accent;
                 rbMsMode.ForeColor = textMuted;
                 GapModeChanged?.Invoke(this, true);
@@ -122,6 +126,14 @@ namespace CollectorFLN.UI.Elements
             {
                 GapSnapChanged?.Invoke(this, cmbSnapDivisor.SelectedItem?.ToString() ?? "");
             };
+        }
+
+        public void ToggleModule(bool isEnabled)
+        {
+            rbMsMode.Enabled = isEnabled;
+            rbSnapMode.Enabled = isEnabled;
+            txtGap.Enabled = isEnabled && rbMsMode.Checked;
+            cmbSnapDivisor.Enabled = isEnabled && rbSnapMode.Checked;
         }
     }
 }
