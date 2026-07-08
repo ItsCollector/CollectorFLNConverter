@@ -17,8 +17,8 @@ namespace CollectorFLN
         public bool EnableRemoveLN { get; set; } = true;
         public bool UseSnapMode { get; set; } = false;
         public int SnapDivisor { get; set; } = 4;
-        public bool ChangePitchUprate { get; set; } = false;
-        public bool ChangePitchDownrate { get; set; } = false;
+        public bool IncreasePitch { get; set; } = false;
+        public bool DecreasePitch { get; set; } = false;
         public bool ShowLog { get; set; } = false;
 
         private static readonly string configFile = "config.json";
@@ -81,8 +81,8 @@ namespace CollectorFLN
             EnableRemoveLN = false;
             UseSnapMode = false;
             SnapDivisor = 4;
-            ChangePitchUprate = false;
-            ChangePitchDownrate = false;
+            IncreasePitch = false;
+            DecreasePitch = false;
             ShowLog = false;
         }
 

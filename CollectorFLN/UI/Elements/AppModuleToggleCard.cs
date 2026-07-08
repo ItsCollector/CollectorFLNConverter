@@ -84,6 +84,14 @@ namespace CollectorFLN.UI.Elements
             chkEnableRateChange.Checked = !chkEnableRateChange.Checked;
             ChkEnableRateChangeChanged?.Invoke(this, chkEnableRateChange.Checked);
         }
+
+        public void ToggleEnabled(bool isEnabled)
+        {
+            chkEnableFLN.Enabled = isEnabled;
+            chkEnableRemoveLN.Enabled = isEnabled;
+            chkEnableRemoveSV.Enabled = isEnabled;
+            chkEnableRateChange.Enabled = isEnabled;
+        }
     }
 
     public record ModuleToggleConfig(bool EnableFLN, bool EnableRemoveLN, bool EnableRemoveSV, bool EnableRateChange);

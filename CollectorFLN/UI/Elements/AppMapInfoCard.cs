@@ -10,16 +10,19 @@ namespace CollectorFLN.UI.Elements
 
         public Panel mapInfoCard { get; }
 
+        private readonly Panel accentBar;
         private readonly Label lblSelectedMap;
         private readonly Label lblSelectedArtist;
         private readonly Label lblVersion;
         private readonly Label lblBpm;
 
+        private bool enabled = false;
+
         public AppMapInfoCard()
         {
             mapInfoCard = MakeCard(cardPosition, cardSize);
 
-            Panel accentBar = new Panel
+            accentBar = new Panel
             {
                 Location = new Point(0, 0),
                 Size = new Size(4, cardSize.Height),
@@ -56,17 +59,17 @@ namespace CollectorFLN.UI.Elements
                 BackColor = Color.Transparent
             };
 
-            lblBpm = new Label
+            /*lblBpm = new Label
             {
                 Text = "",
-                Location = new Point(18, 100),
+                Location = new Point(18, 84),
                 Size = new Size(410, 18),
                 Font = new Font("Segoe UI", 8f),
                 ForeColor = textMuted,
                 BackColor = Color.Transparent
-            };
+            };*/
 
-            mapInfoCard.Controls.AddRange(new Control[] { accentBar, lblSelectedMap, lblSelectedArtist, lblVersion, lblBpm});
+            mapInfoCard.Controls.AddRange(new Control[] { accentBar, lblSelectedMap, lblSelectedArtist, lblVersion });
         }
 
         // Single entry point for updating displayed info — callers don't touch labels directly
@@ -75,7 +78,18 @@ namespace CollectorFLN.UI.Elements
             lblSelectedMap.Text = string.IsNullOrEmpty(mapName) ? "No map selected" : mapName;
             lblSelectedArtist.Text = artist;
             lblVersion.Text = version;
-            lblBpm.Text = bpm > 0 ? $"BPM: {bpm}" : "";
+            //lblBpm.Text = bpm > 0 ? $"BPM: {bpm}" : "";
+        }
+
+        public void ToggleEnabled(bool isEnabled)
+        {
+            mapInfoCard.Enabled = isEnabled;
+            accentBar.BackColor = isEnabled ? accent : Color.FromArgb(64, 64, 64);
+
+            if (!isEnabled)
+            {
+                SetMapInfo("Osu! is not running", "", "", 0);
+            }
         }
     }
 }

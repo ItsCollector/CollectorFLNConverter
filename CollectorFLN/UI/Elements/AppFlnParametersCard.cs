@@ -12,6 +12,7 @@ namespace CollectorFLN.UI.Elements
 
         public Panel flnParametersCard { get; }
 
+        private readonly Panel accentBar;
         private readonly RadioButton rbMsMode;
         private readonly RadioButton rbSnapMode;
         private readonly Label lblGapLabel;
@@ -31,10 +32,17 @@ namespace CollectorFLN.UI.Elements
             Panel flnDivider = new Panel { Location = new Point(14, 30), Size = new Size(412, 1), BackColor = border };
             Label lblGapMode = MakeLabel("Gap Mode", new Point(16, 44), 9f, textMuted);
 
+            accentBar = new Panel
+            {
+                Location = new Point(0, 0),
+                Size = new Size(4, cardSize.Height),
+                BackColor = accent
+            };
+
             rbMsMode = new RadioButton
             {
                 Text = "Ms",
-                Location = new Point(195, 42),
+                Location = new Point(160, 42),
                 AutoSize = true,
                 ForeColor = config.UseSnapMode ? textMuted : accent,
                 BackColor = Color.Transparent,
@@ -46,7 +54,7 @@ namespace CollectorFLN.UI.Elements
             rbSnapMode = new RadioButton
             {
                 Text = "Snap",
-                Location = new Point(260, 42),
+                Location = new Point(225, 42),
                 AutoSize = true,
                 ForeColor = config.UseSnapMode ? accent : textMuted,
                 BackColor = Color.Transparent,
@@ -57,13 +65,13 @@ namespace CollectorFLN.UI.Elements
 
             lblGapLabel = MakeLabel("Gap", new Point(16, 80), 9f, textMuted);
 
-            txtGap = MakeTextBox(new Point(195, 76), new Size(70, 26));
+            txtGap = MakeTextBox(new Point(160, 76), new Size(70, 26));
             txtGap.Text = config.Gap.ToString();
             txtGap.Visible = !config.UseSnapMode;
 
             cmbSnapDivisor = new ComboBox
             {
-                Location = new Point(195, 76),
+                Location = new Point(160, 76),
                 Size = new Size(70, 26),
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 ForeColor = textPrim,
@@ -128,12 +136,13 @@ namespace CollectorFLN.UI.Elements
             };
         }
 
-        public void ToggleModule(bool isEnabled)
+        public void ToggleEnabled(bool isEnabled)
         {
             rbMsMode.Enabled = isEnabled;
             rbSnapMode.Enabled = isEnabled;
             txtGap.Enabled = isEnabled && rbMsMode.Checked;
             cmbSnapDivisor.Enabled = isEnabled && rbSnapMode.Checked;
+            //accentBar.BackColor = isEnabled ? accent : Color.FromArgb(64, 64, 64);
         }
     }
 }

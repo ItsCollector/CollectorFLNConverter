@@ -5,7 +5,7 @@ namespace CollectorFLN.UI.Elements
 {
     public class AppDifficultyOverrideCard
     {
-        private static readonly Point cardPosition = new(20, 532);
+        private static readonly Point cardPosition = new(20, 560);
         private static readonly Size cardSize = new(440, 120);
 
         public Panel difficultyOverrideCard { get; }
@@ -30,34 +30,34 @@ namespace CollectorFLN.UI.Elements
             Label lblOD = MakeLabel("Overall Difficulty", new Point(16, 46), 9f, textMuted);
             Label lblHP = MakeLabel("HP Drain", new Point(16, 74), 9f, textMuted);
 
-            txtOD = MakeTextBox(new Point(195, 42), new Size(70, 26));
+            txtOD = MakeTextBox(new Point(160, 42), new Size(70, 26));
             txtOD.Text = config.OD.ToString("0.#");
             txtOD.Enabled = config.OverrideOD;
 
             chkOverrideOD = new CheckBox
             {
-                Text = "Override",
-                Location = new Point(302, 44),
+                Text = "Override OD",
+                Location = new Point(260, 44),
                 AutoSize = true,
                 ForeColor = config.OverrideOD ? accent : textMuted,
                 BackColor = Color.Transparent,
-                Font = new Font("Segoe UI", 8.5f),
+                Font = new Font("Segoe UI", 9f),
                 Cursor = Cursors.Hand,
                 Checked = config.OverrideOD
             };
 
-            txtHP = MakeTextBox(new Point(195, 70), new Size(70, 26));
+            txtHP = MakeTextBox(new Point(160, 70), new Size(70, 26));
             txtHP.Text = config.HP.ToString("0.#");
             txtHP.Enabled = config.OverrideHP;
 
             chkOverrideHP = new CheckBox
             {
-                Text = "Override",
-                Location = new Point(302, 72),
+                Text = "Override HP",
+                Location = new Point(260, 72),
                 AutoSize = true,
                 ForeColor = config.OverrideHP ? accent : textMuted,
                 BackColor = Color.Transparent,
-                Font = new Font("Segoe UI", 8.5f),
+                Font = new Font("Segoe UI", 9f),
                 Cursor = Cursors.Hand,
                 Checked = config.OverrideHP
             };
@@ -150,6 +150,14 @@ namespace CollectorFLN.UI.Elements
         public void SetHP(float hp)
         {
             txtHP.Text = hp.ToString("0.#");
+        }
+
+        public void ToggleEnabled(bool isEnabled)
+        {
+            chkOverrideOD.Enabled = isEnabled;
+            txtOD.Enabled = isEnabled && chkOverrideOD.Checked;
+            chkOverrideHP.Enabled = isEnabled;
+            txtHP.Enabled = isEnabled && chkOverrideHP.Checked;
         }
 
         public bool GetOverrideOD() => chkOverrideOD.Checked;

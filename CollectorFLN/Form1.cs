@@ -14,6 +14,9 @@ namespace CollectorFLN
 
         // Map Info
         private AppMapInfoCard mapInfoCard = null!;
+        private AppModuleToggleCard moduleCard;
+        private AppFlnParametersCard flnCard;
+        private AppRateChangeCard rateChangeCard;
         private AppDifficultyOverrideCard difficultyOverrideCard = null!;
         private Button btnConvert = null!;
         private Button btnLinkOsu = null!;
@@ -21,6 +24,7 @@ namespace CollectorFLN
         // Runtime 
         private BeatmapMemorySnapshot currentSnapshot = new BeatmapMemorySnapshot();
         private OsuMemoryReader osuMemoryReader;
+        private bool osuOpen = false;
         private System.Windows.Forms.Timer memoryTimer;
 
         // Config
@@ -71,18 +75,6 @@ namespace CollectorFLN
                 SetClientSize(visible);
             };
 
-            toolbar.PitchUprateChanged += (s, val) =>
-            {
-                config.ChangePitchUprate = val;
-                config.Save();
-            };
-
-            toolbar.PitchDownrateChanged += (s, val) =>
-            {
-                config.ChangePitchDownrate = val;
-                config.Save();
-            };
-
             toolbar.LogMessage += (s, msg) =>
             {
                 Log(msg);
@@ -99,7 +91,7 @@ namespace CollectorFLN
             Controls.Add(mapInfoCard.mapInfoCard);
 
             // SECTION 2 — Module Toggles Card
-            var moduleCard = new AppModuleToggleCard(new ModuleToggleConfig(config.EnableFLN, config.EnableRemoveLN, config.EnableRemoveSV, config.EnableRateChange));
+            moduleCard = new AppModuleToggleCard(new ModuleToggleConfig(config.EnableFLN, config.EnableRemoveLN, config.EnableRemoveSV, config.EnableRateChange));
             Controls.Add(moduleCard.moduleCard);
 
             moduleCard.ChkEnableRemoveLNChanged += (s, isEnabled) =>
@@ -115,9 +107,9 @@ namespace CollectorFLN
             };
 
             // SECTION 3 — FLN Parameters Card 
-            var flnCard = new AppFlnParametersCard(config);
+            flnCard = new AppFlnParametersCard(config);
             Controls.Add(flnCard.flnParametersCard);
-            flnCard.ToggleModule(config.EnableFLN);
+            flnCard.ToggleEnabled(config.EnableFLN);
 
             flnCard.GapModeChanged += (s, isSnap) =>
             {
@@ -147,16 +139,16 @@ namespace CollectorFLN
 
             moduleCard.ChkEnableFLNChanged += (s, isEnabled) =>
             {
-                flnCard.ToggleModule(isEnabled);
+                flnCard.ToggleEnabled(isEnabled);
 
                 config.EnableFLN = isEnabled;
                 config.Save();
             };
 
             // SECTION 4 — Rate Change Card
-            var rateChangeCard = new AppRateChangeCard(new RateChangeConfig(200, 1.00));
+            rateChangeCard = new AppRateChangeCard(new RateChangeConfig(200, 1.00, config.IncreasePitch, config.DecreasePitch));
             Controls.Add(rateChangeCard.rateChangeCard);
-            rateChangeCard.ToggleModule(config.EnableRateChange);
+            rateChangeCard.ToggleEnabled(config.EnableRateChange);
 
             rateChangeCard.RateChanged += (s, rate) =>
             {
@@ -166,7 +158,7 @@ namespace CollectorFLN
 
             moduleCard.ChkEnableRateChangeChanged += (s, isEnabled) =>
             {
-                rateChangeCard.ToggleModule(isEnabled);
+                rateChangeCard.ToggleEnabled(isEnabled);
                 config.EnableRateChange = isEnabled;
                 config.Save();
             };
@@ -210,13 +202,13 @@ namespace CollectorFLN
             };
 
             // SECTION 6 — Convert / Link Buttons
-            btnConvert = new Button { Text = "CONVERT", Size = new Size(440, 44), Location = new Point(20, 662), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(18, 18, 24), Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnConvert = new Button { Text = "CONVERT", Size = new Size(440, 44), Location = new Point(20, 690), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(18, 18, 24), Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold), Cursor = Cursors.Hand };
             btnConvert.FlatAppearance.BorderSize = 0;
             btnConvert.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 130, 190);
             btnConvert.FlatAppearance.MouseDownBackColor = Color.FromArgb(220, 80, 150);
             Controls.Add(btnConvert);
 
-            btnLinkOsu = new Button { Text = "LINK OSU SONGS FOLDER", Size = new Size(440, 44), Location = new Point(20, 662), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(18, 18, 24), Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold), Cursor = Cursors.Hand };
+            btnLinkOsu = new Button { Text = "LINK OSU SONGS FOLDER", Size = new Size(440, 44), Location = new Point(20, 690), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(18, 18, 24), Font = new Font("Segoe UI Semibold", 10.5f, FontStyle.Bold), Cursor = Cursors.Hand };
             btnLinkOsu.FlatAppearance.BorderSize = 0;
             btnLinkOsu.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 130, 190);
             btnLinkOsu.FlatAppearance.MouseDownBackColor = Color.FromArgb(220, 80, 150);
@@ -286,14 +278,22 @@ namespace CollectorFLN
             {
                 incomingSnapshot = osuMemoryReader.GetMapData(config.SongPath);
             }
-            catch
+            catch (Exception ex)
             {
+                Log($"Error: {ex.Message}");
                 return; // silently ignore bad reads
             }
 
             if (incomingSnapshot == null)
             {
+                osuOpen = false;
+                ToggleEnabled(false);
                 return;
+            }
+            else
+            {
+                osuOpen = true;
+                ToggleEnabled(true);
             }
 
             btnConvert.Enabled = !string.IsNullOrEmpty(incomingSnapshot.fileName) && incomingSnapshot.gamemode == "3";
@@ -328,11 +328,11 @@ namespace CollectorFLN
         {
             if (logOpen)
             {
-                this.ClientSize = new Size(940, 726);
+                this.ClientSize = new Size(940, 754);
             }
             else
             {
-                this.ClientSize = new Size(480, 726);
+                this.ClientSize = new Size(480, 754);
             }
         }
 
@@ -475,6 +475,25 @@ namespace CollectorFLN
 
             Log("Map validation passed.");
             return true;
+        }
+
+        // Toggle for all fields depending on whether Osu! is open or not
+        public void ToggleEnabled(bool osuOpen)
+        {
+            mapInfoCard.ToggleEnabled(osuOpen);
+            moduleCard.ToggleEnabled(osuOpen);
+            difficultyOverrideCard.ToggleEnabled(osuOpen);
+
+            if (osuOpen)
+            {
+                flnCard.ToggleEnabled(config.EnableFLN);
+                rateChangeCard.ToggleEnabled(config.EnableRateChange);
+            }
+            else
+            {
+                flnCard.ToggleEnabled(false);
+                rateChangeCard.ToggleEnabled(false);
+            }
         }
 
         public void Log(string message)
