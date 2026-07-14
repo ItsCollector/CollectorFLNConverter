@@ -26,10 +26,8 @@ A tool for Osu!mania to convert charts to full long note
 - Works for Windows only
 
 ## To-do List
-- Built-in rate changer 
-- Separation of SV removal and rate changer to create a 3 in 1 mania tool
-- Native linux support
-- Fix a rounding issue when converting using snap configured LN gap. You likely won't notice the issue in practice unless you open AI mod so it's not a major fault
+- I am rebuilding this application using Avalonia as the UI framework to add Mac and Linux support. You can find the repository here where I will be working: https://github.com/ItsCollector/ManiaUtilities
+- CollectorFLNConverter will be feature locked, only updating if any major bugs appear
   
 ## Stars 
 - If my program helped you, leave a star on Github!
