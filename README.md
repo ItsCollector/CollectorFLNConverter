@@ -28,6 +28,7 @@ A tool for Osu!mania to convert charts to full long note
 ## To-do List
 - I am rebuilding this application using Avalonia as the UI framework to add Mac and Linux support. You can find the repository here where I will be working: https://github.com/ItsCollector/ManiaUtilities
 - CollectorFLNConverter will be feature locked, only updating if any major bugs appear
+- The branch containing overhaul code will be kept for reference but will never find its way to main in this repository. 
   
 ## Stars 
 - If my program helped you, leave a star on Github!
