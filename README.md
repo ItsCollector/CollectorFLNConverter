@@ -1,6 +1,10 @@
 # Collector FLN Converter
 A tool for Osu!mania to convert charts to full long note
 
+![Stars](https://img.shields.io/github/stars/ItsCollector/CollectorFLNConverter)
+![Downloads](https://img.shields.io/github/downloads/ItsCollector/CollectorFLNConverter)
+![License](https://img.shields.io/github/license/ItsCollector/CollectorFLNConverter)
+
 <img width="459" height="644" alt="image" src="https://github.com/user-attachments/assets/cca8218a-4067-4329-bdb1-77d2c6cc27d7" />
 
 ## Features
