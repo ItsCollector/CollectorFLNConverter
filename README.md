@@ -1,6 +1,8 @@
 # Collector FLN Converter
 A tool for Osu!mania to convert charts to full long note
 
+Development Discord: https://discord.gg/QxvHkmzunv
+
 <img width="459" height="644" alt="image" src="https://github.com/user-attachments/assets/cca8218a-4067-4329-bdb1-77d2c6cc27d7" />
 
 ## Features
